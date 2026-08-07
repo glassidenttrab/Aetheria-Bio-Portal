@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Play, Sparkles, Activity, ShieldCheck, Database, Layers, ArrowRight, DollarSign, Award, FileText, HeartPulse } from 'lucide-react';
 import { PipelineResult, LongevityPipelineResult } from '../types';
+import { saveSkillAuditLogDB } from '../services/supabaseService';
 
 interface PipelineRunnerProps {
   onComplete: (result: PipelineResult) => void;
@@ -44,6 +45,16 @@ export const PipelineRunner: React.FC<PipelineRunnerProps> = ({ onComplete, onLo
       } else {
         clearInterval(interval);
         setIsRunning(false);
+
+        // Save Audit Log to Supabase PostgreSQL DB
+        saveSkillAuditLogDB({
+          skill_id: mode === 'longevity' ? 'senolytics-pipeline' : 'ai-target-scanning',
+          skill_name: mode === 'longevity' ? 'Anti-Aging Senolytics Pipeline' : 'AI Target Scanning Pipeline',
+          category: mode === 'longevity' ? '안티에이징' : '전신 10대 의학과',
+          query_target: targetGene,
+          execution_time_ms: 380,
+          is_bookmarked: true
+        });
         
         if (mode === 'longevity' && onLongevityComplete) {
           onLongevityComplete({

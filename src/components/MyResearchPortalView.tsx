@@ -5,7 +5,7 @@ import {
   User, ShieldCheck, Crown, Zap, Mail, Building, Building2, Award, Star, Trash2, ArrowRight, Clock, KeyRound, Save, Check, RefreshCw
 } from 'lucide-react';
 import { EnterpriseB2BConsoleModal } from './EnterpriseB2BConsoleModal';
-import { fetchSkillAuditLogsDB } from '../services/supabaseService';
+import { fetchSkillAuditLogsDB, upsertUserProfileDB, SkillAuditLogItem } from '../services/supabaseService';
 
 interface MyResearchPortalViewProps {
   user: UserProfile;
@@ -23,6 +23,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'profile' | 'vault' | 'history' | 'billing'>('profile');
   const [isB2BConsoleOpen, setIsB2BConsoleOpen] = useState(false);
+  const [dbAuditLogs, setDbAuditLogs] = useState<SkillAuditLogItem[]>([]);
 
   // User Edit State
   const [nameInput, setNameInput] = useState(user.name);
@@ -34,6 +35,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
   useEffect(() => {
     fetchSkillAuditLogsDB().then(logs => {
       if (logs && logs.length > 0) {
+        setDbAuditLogs(logs);
         console.log('Supabase Audit Logs Synced:', logs.length);
       }
     });
@@ -65,22 +67,33 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
         symbol: detailMap[k]?.symbol || k,
         dept: detailMap[k]?.dept || '생의학',
         deptKey: detailMap[k]?.deptKey || 'neurosurgery'
-      }));
+      })) as any;
     } catch {
       return [
         { key: 'TAU', name: 'Microtubule-Associated Protein Tau', symbol: 'MAPT', dept: '신경외과', deptKey: 'neurosurgery' },
         { key: 'PCSK9', name: 'Proprotein Convertase Subtilisin 9', symbol: 'PCSK9', dept: '순환기내과', deptKey: 'cardiology' }
-      ];
+      ] as any;
     }
   });
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     onUpdateUser({
       name: nameInput,
       institution: institutionInput,
       title: titleInput
     });
+
+    // Save to Supabase PostgreSQL DB Users Table
+    await upsertUserProfileDB({
+      email: user.email,
+      name: nameInput,
+      institution: institutionInput,
+      title: titleInput,
+      plan: user.plan,
+      queriesRemaining: user.queriesRemaining
+    });
+
     setIsSavedSuccess(true);
     setTimeout(() => setIsSavedSuccess(false), 3000);
   };

@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { UserProfile, UserPlanTier, PaymentReceipt } from '../types';
 import { PayPalCheckoutButton } from './payment/PayPalCheckoutButton';
 import { SAAS_PAYPAL_PRODUCTS } from '../lib/paypal';
+import { recordSubscriptionDB } from '../services/supabaseService';
 import { ShieldCheck, CreditCard, Lock, CheckCircle2, Sparkles, X, Zap, Crown, User, Mail, LogIn, UserPlus } from 'lucide-react';
 
 interface AuthCheckoutModalProps {

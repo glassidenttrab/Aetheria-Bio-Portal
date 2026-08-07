@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL 데이터베이스 서비스
+  db:
+    image: postgres:16-alpine
+    container_name: aetheria-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: aetheriabio_secret_pass
+      POSTGRES_DB: aetheriabio
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d aetheriabio"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  # 2. Aetheria Bio Portal 웹 서비스
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aetheria-web
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+volumes:
+  postgres_data:

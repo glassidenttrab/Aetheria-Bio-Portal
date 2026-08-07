@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
   Building2, Terminal, FileText, CheckCircle2, Copy, Sparkles, X,
   Key, ShieldCheck, Download, Code2, Play, Layers, Server, Cpu
 } from 'lucide-react';
+import { createApiKeyDB, fetchApiKeysDB, ApiKeyItem } from '../services/supabaseService';
 
 interface EnterpriseB2BConsoleModalProps {
   isOpen: boolean;
@@ -25,6 +26,18 @@ export const EnterpriseB2BConsoleModal: React.FC<EnterpriseB2BConsoleModalProps>
   const [apiKey, setApiKey] = useState('deeptech_ent_live_98f2a1b94e772c3801f');
   const [copiedKey, setCopiedKey] = useState(false);
   const [onboardingSubmitted, setOnboardingSubmitted] = useState(false);
+  const [dbApiKeys, setDbApiKeys] = useState<ApiKeyItem[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchApiKeysDB().then(keys => {
+        if (keys && keys.length > 0) {
+          setDbApiKeys(keys);
+          setApiKey(keys[0].api_key_hash);
+        }
+      });
+    }
+  }, [isOpen]);
 
   // Tab 2 Developer API State
   const [selectedSdk, setSelectedSdk] = useState<'python' | 'javascript' | 'curl' | 'graphql'>('python');

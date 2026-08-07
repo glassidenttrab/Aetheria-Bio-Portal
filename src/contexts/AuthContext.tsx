@@ -11,6 +11,7 @@ import {
 import { auth } from '../lib/firebase';
 import { createUserProfile, getUserProfile, UserProfile } from '../lib/firestore';
 import { supabase } from '../lib/supabase';
+import { fetchUserProfileDB, upsertUserProfileDB } from '../services/supabaseService';
 
 interface AuthContextType {
   user: User | null;
@@ -35,17 +36,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (firebaseUser) {
         try {
-          let userProfile = await getUserProfile(firebaseUser.uid);
-          if (!userProfile) {
-            await createUserProfile(firebaseUser.uid, {
-              email: firebaseUser.email,
-              displayName: firebaseUser.displayName || 'Dr. Seung-Woo Kim',
-              photoURL: firebaseUser.photoURL,
+          // 1. Try Supabase PostgreSQL DB user profile first
+          const dbProfile = await fetchUserProfileDB(firebaseUser.email || '');
+          if (dbProfile) {
+            setProfile({
+              uid: firebaseUser.uid,
+              email: dbProfile.email,
+              displayName: dbProfile.name,
+              plan: dbProfile.plan,
+              queriesRemaining: dbProfile.queriesRemaining,
+            } as any);
+          } else {
+            // 2. Upsert initial user into Supabase DB
+            const newDbProfile = await upsertUserProfileDB({
+              email: firebaseUser.email || 'scientist@aetheria.bio',
+              name: firebaseUser.displayName || 'Dr. Seung-Woo Kim',
               plan: 'free',
+              queriesRemaining: 3
             });
-            userProfile = await getUserProfile(firebaseUser.uid);
+            let userProfile = await getUserProfile(firebaseUser.uid);
+            if (!userProfile) {
+              await createUserProfile(firebaseUser.uid, {
+                email: firebaseUser.email,
+                displayName: firebaseUser.displayName || 'Dr. Seung-Woo Kim',
+                photoURL: firebaseUser.photoURL,
+                plan: 'free',
+              });
+              userProfile = await getUserProfile(firebaseUser.uid);
+            }
+            setProfile(newDbProfile ? {
+              uid: firebaseUser.uid,
+              email: newDbProfile.email,
+              displayName: newDbProfile.name,
+              plan: newDbProfile.plan,
+              queriesRemaining: newDbProfile.queriesRemaining,
+            } as any : userProfile);
           }
-          setProfile(userProfile);
         } catch (err) {
           console.warn('Firebase connection notice: Using active session fallback', err);
         }

@@ -157,7 +157,7 @@ export async function recordSubscriptionDB(sub: {
         tier: sub.tier,
         amount_usd: sub.amountUSD,
         is_annual: sub.isAnnual || false,
-        stripe_customer_id: sub.stripeCustomerId || `CUST-STRIPE-${Date.now()}`,
+        stripe_customer_id: sub.stripeCustomerId || `CUST-PAYPAL-${Date.now()}`,
         status: 'active',
         started_at: new Date().toISOString(),
       });
@@ -168,3 +168,68 @@ export async function recordSubscriptionDB(sub: {
     return false;
   }
 }
+
+/**
+ * 6. Fetch API Keys from Supabase DB
+ */
+export async function fetchApiKeysDB(): Promise<ApiKeyItem[]> {
+  try {
+    const { data, error } = await supabase
+      .from('api_keys')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error || !data) return [];
+    return data as ApiKeyItem[];
+  } catch (err) {
+    console.warn('Supabase api_keys fetch notice:', err);
+    return [];
+  }
+}
+
+/**
+ * 7. Create API Key in Supabase DB
+ */
+export async function createApiKeyDB(keyItem: ApiKeyItem): Promise<ApiKeyItem | null> {
+  try {
+    const { data, error } = await supabase
+      .from('api_keys')
+      .insert({
+        company_name: keyItem.company_name,
+        key_name: keyItem.key_name,
+        api_key_hash: keyItem.api_key_hash,
+        rate_limit_per_min: keyItem.rate_limit_per_min || 1000,
+        allowed_ip_range: keyItem.allowed_ip_range || '*',
+        is_active: true
+      })
+      .select()
+      .single();
+
+    if (error || !data) {
+      console.warn('Supabase api_keys insert notice:', error);
+      return null;
+    }
+    return data as ApiKeyItem;
+  } catch (err) {
+    console.warn('Supabase api_keys insert exception:', err);
+    return null;
+  }
+}
+
+/**
+ * 8. Delete API Key from Supabase DB
+ */
+export async function deleteApiKeyDB(id: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('api_keys')
+      .delete()
+      .eq('id', id);
+
+    return !error;
+  } catch (err) {
+    console.warn('Supabase api_keys delete exception:', err);
+    return false;
+  }
+}
+

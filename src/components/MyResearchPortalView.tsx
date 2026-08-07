@@ -5,7 +5,7 @@ import {
   User, ShieldCheck, Crown, Zap, Mail, Building, Building2, Award, Star, Trash2, ArrowRight, Clock, KeyRound, Save, Check, RefreshCw
 } from 'lucide-react';
 import { EnterpriseB2BConsoleModal } from './EnterpriseB2BConsoleModal';
-import { fetchSkillAuditLogsDB, upsertUserProfileDB, SkillAuditLogItem } from '../services/supabaseService';
+import { fetchSkillAuditLogsDB, upsertUserProfileDB, SkillAuditLogItem, fetchSubscriptionsDB, SubscriptionItem } from '../services/supabaseService';
 
 interface MyResearchPortalViewProps {
   user: UserProfile;
@@ -24,6 +24,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
   const [activeTab, setActiveTab] = useState<'profile' | 'vault' | 'history' | 'billing'>('profile');
   const [isB2BConsoleOpen, setIsB2BConsoleOpen] = useState(false);
   const [dbAuditLogs, setDbAuditLogs] = useState<SkillAuditLogItem[]>([]);
+  const [dbSubscriptions, setDbSubscriptions] = useState<SubscriptionItem[]>([]);
 
   // User Edit State
   const [nameInput, setNameInput] = useState(user.name);
@@ -37,13 +38,13 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
     setTitleInput(user.title || '');
   }, [user]);
 
-  // Sync Supabase Audit Logs
+  // Sync Supabase Audit Logs & Subscriptions
   useEffect(() => {
     fetchSkillAuditLogsDB().then(logs => {
-      if (logs && logs.length > 0) {
-        setDbAuditLogs(logs);
-        console.log('Supabase Audit Logs Synced:', logs.length);
-      }
+      if (logs) setDbAuditLogs(logs);
+    });
+    fetchSubscriptionsDB().then(subs => {
+      if (subs) setDbSubscriptions(subs);
     });
   }, []);
 
@@ -369,32 +370,36 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
       {activeTab === 'history' && (
         <div className="glass-panel p-8" style={{ border: '1px solid rgba(78,222,163,0.3)', borderRadius: '24px', background: 'rgba(15, 23, 42, 0.9)' }}>
           <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffffff', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Clock size={22} color="#4edea3" /> 최근 38개 사이언스 스킬 AI 스캐닝 기록
+            <Clock size={22} color="#4edea3" /> 최근 사이언스 스킬 AI 스캐닝 활동 기록 (Database Live Log)
           </h3>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {[
-              { time: '오늘 11:15', target: 'MAPT (Microtubule-Associated Protein Tau)', dept: '신경외과', skills: 'PubMed, AlphaFold DB, OpenTargets', result: 'AlphaFold pLDDT 94.8 / FTO Clear' },
-              { time: '어제 16:40', target: 'PCSK9 (Proprotein Convertase Subtilisin 9)', dept: '순환기내과', skills: 'ChEMBL, ClinicalTrials, openFDA', result: 'ChEMBL IC50 4.2 nM / 28개 임상' },
-              { time: '2026-08-04', target: 'CD274 (PD-L1 Immune Checkpoint)', dept: '종양내과', skills: 'STRING PPI, Reactome, ClinVar', result: 'PD-L1 Blockbuster Target / FTO Clear' }
-            ].map((log, idx) => (
-              <div key={idx} style={{ padding: '16px 20px', borderRadius: '14px', background: 'rgba(23, 31, 51, 0.6)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#8899a6', fontWeight: 700 }}>{log.time}</span>
-                    <span className="badge badge-cyan" style={{ fontSize: '0.75rem' }}>{log.dept}</span>
-                    <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff' }}>{log.target}</span>
+          {dbAuditLogs.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#8899a6', fontSize: '0.95rem' }}>
+              아직 기록된 AI 스캐닝 활동 내역이 없습니다. 스캐너 및 파이프라인을 실행하면 분석 로그가 데이터베이스에 자동으로 기록됩니다.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {dbAuditLogs.map((log, idx) => (
+                <div key={log.id || idx} style={{ padding: '16px 20px', borderRadius: '14px', background: 'rgba(23, 31, 51, 0.6)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '0.8rem', color: '#8899a6', fontWeight: 700 }}>
+                        {log.created_at ? new Date(log.created_at).toLocaleString() : '최근'}
+                      </span>
+                      <span className="badge badge-cyan" style={{ fontSize: '0.75rem' }}>{log.category}</span>
+                      <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff' }}>{log.query_target}</span>
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#bcc9cd', marginTop: '4px' }}>
+                      연동 스킬: {log.skill_name} ({log.skill_id})
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: '#bcc9cd', marginTop: '4px' }}>
-                    연동 스킬: {log.skills}
+                  <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#4edea3' }}>
+                    실행시간 {log.execution_time_ms || 120}ms / DB 저장됨
                   </div>
                 </div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#4edea3' }}>
-                  {log.result}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -402,10 +407,10 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
       {activeTab === 'billing' && (
         <div className="glass-panel p-8" style={{ border: '1px solid rgba(208,188,255,0.3)', borderRadius: '24px', background: 'rgba(15, 23, 42, 0.9)' }}>
           <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffffff', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <KeyRound size={22} color="#d0bcff" /> SaaS 구독 및 라이선스 정산 관리
+            <KeyRound size={22} color="#d0bcff" /> SaaS 구독 및 라이선스 정산 관리 (Database Live)
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '24px' }}>
             <div style={{ padding: '24px', borderRadius: '18px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(76, 215, 246, 0.3)' }}>
               <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>현재 활성화된 플랜</div>
               <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#4cd7f6', margin: '8px 0' }}>
@@ -417,12 +422,12 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
             </div>
 
             <div style={{ padding: '24px', borderRadius: '18px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(78, 222, 163, 0.3)' }}>
-              <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>PayPal 정산 ID 및 인증 상태</div>
+              <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>DB 동기화 정산 ID 상태</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#4edea3', margin: '8px 0', fontFamily: 'monospace' }}>
-                PAYPAL-SUB-882901-NEURO
+                {dbSubscriptions.length > 0 ? (dbSubscriptions[0].stripe_customer_id || 'PAYPAL-SUB-LIVE') : '미결제 (No Active Billing)'}
               </div>
               <div style={{ fontSize: '0.85rem', color: '#bcc9cd', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <ShieldCheck size={16} color="#4edea3" /> PayPal 결제 승인 완료 및 30일 자동 갱신
+                <ShieldCheck size={16} color="#4edea3" /> PayPal 결제 승인 시스템 연동 활성화
               </div>
             </div>
 
@@ -441,6 +446,30 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
               </div>
             )}
           </div>
+
+          <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff', marginBottom: '12px' }}>
+            결제 및 정산 내역 히스토리 ({dbSubscriptions.length}건)
+          </h4>
+
+          {dbSubscriptions.length === 0 ? (
+            <div style={{ padding: '30px', textAlign: 'center', color: '#8899a6', fontSize: '0.9rem', background: 'rgba(23, 31, 51, 0.5)', borderRadius: '14px' }}>
+              아직 정기구독 결제 내역이 없습니다. 플랜 업그레이드 진행 시 결제 영수증이 데이터베이스에 실시간 보관됩니다.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {dbSubscriptions.map((sub, idx) => (
+                <div key={sub.id || idx} style={{ padding: '14px 18px', borderRadius: '12px', background: 'rgba(23, 31, 51, 0.6)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ fontWeight: 800, color: '#ffffff', marginRight: '10px' }}>{sub.tier.toUpperCase()} 플랜</span>
+                    <span style={{ fontSize: '0.8rem', color: '#8899a6' }}>{sub.started_at ? new Date(sub.started_at).toLocaleDateString() : '최근'}</span>
+                  </div>
+                  <div style={{ fontWeight: 800, color: '#4cd7f6' }}>
+                    ${sub.amount_usd} USD
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

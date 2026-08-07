@@ -60,9 +60,9 @@ export async function upsertUserProfileDB(profile: Partial<UserProfile> & { emai
       .from('users')
       .upsert({
         email: profile.email,
-        name: profile.name || 'Dr. Seung-Woo Kim',
-        institution: profile.institution || 'Aetheria BioTech Institute',
-        title: profile.title || 'Senior Principal Researcher',
+        name: profile.name || '',
+        institution: profile.institution || '',
+        title: profile.title || '',
         plan: profile.plan || 'free',
         queries_remaining: profile.queriesRemaining ?? 3,
         updated_at: new Date().toISOString(),
@@ -230,6 +230,36 @@ export async function deleteApiKeyDB(id: string): Promise<boolean> {
   } catch (err) {
     console.warn('Supabase api_keys delete exception:', err);
     return false;
+  }
+}
+
+export interface SubscriptionItem {
+  id?: string;
+  user_id?: string;
+  stripe_customer_id?: string;
+  tier: string;
+  is_annual?: boolean;
+  amount_usd: number;
+  status: string;
+  started_at?: string;
+  expires_at?: string;
+}
+
+/**
+ * 9. Fetch Subscriptions Payment History from Supabase DB
+ */
+export async function fetchSubscriptionsDB(): Promise<SubscriptionItem[]> {
+  try {
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .order('started_at', { ascending: false });
+
+    if (error || !data) return [];
+    return data as SubscriptionItem[];
+  } catch (err) {
+    console.warn('Supabase subscriptions fetch notice:', err);
+    return [];
   }
 }
 

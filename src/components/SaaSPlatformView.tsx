@@ -143,14 +143,14 @@ Status: High Freedom to Operate (FTO Clear)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       {/* Category Hero Banner */}
-      <div className="glass-panel" style={{ padding: '36px 40px', border: '1px solid rgba(76, 215, 246, 0.35)', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(11, 19, 38, 0.98) 100%)', position: 'relative', overflow: 'hidden' }}>
+      <div className="glass-panel" style={{ padding: '52px 48px 44px 48px', border: '1px solid rgba(76, 215, 246, 0.35)', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(11, 19, 38, 0.98) 100%)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', right: '-40px', top: '-40px', opacity: 0.2, pointerEvents: 'none' }}>
           <img src="/public/molecular_structure.jpg" alt="Bio Background" style={{ width: '480px', height: '320px', objectFit: 'cover', borderRadius: '24px' }} />
         </div>
 
-        <div style={{ position: 'relative', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
+        <div style={{ position: 'relative', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '24px' }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 18px', borderRadius: '20px', background: 'rgba(76, 215, 246, 0.15)', border: '1px solid rgba(76, 215, 246, 0.5)', color: '#4cd7f6', fontSize: '0.82rem', fontWeight: 800, marginTop: '4px', marginBottom: '20px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 18px', borderRadius: '20px', background: 'rgba(76, 215, 246, 0.15)', border: '1px solid rgba(76, 215, 246, 0.5)', color: '#4cd7f6', fontSize: '0.82rem', fontWeight: 800, marginTop: '8px', marginBottom: '20px' }}>
               <Sparkles size={15} /> 38 Science Skills Powered Bio Portal
             </div>
 

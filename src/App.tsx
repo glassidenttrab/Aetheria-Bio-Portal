@@ -5,12 +5,13 @@ import { PrivacyTermsModal } from './components/PrivacyTermsModal';
 import { PlanPricingDetailsModal } from './components/PlanPricingDetailsModal';
 import { MyResearchPortalView } from './components/MyResearchPortalView';
 import { SuperAdminDashboardModal } from './components/SuperAdminDashboardModal';
+import { ContactSupportModal } from './components/ContactSupportModal';
 import { UserProfile, UserPlanTier, PaymentReceipt, SaasCategory } from './types';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import {
   Brain, Bone, Smile, Stethoscope, Clock, ShieldCheck, Sparkles, User, Zap, Crown, CheckCircle2,
   DollarSign, ArrowRight, HelpCircle, Lock, KeyRound, Database, Server, Home, Info, Layers, Activity, HeartPulse, Eye, Dna,
-  Globe, ChevronDown, Star, Menu, X
+  Globe, ChevronDown, Star, Menu, X, Headset
 } from 'lucide-react';
 
 import { useAuth } from './contexts/AuthContext';
@@ -37,6 +38,7 @@ const AppInner: React.FC = () => {
 
   const [isPlanDetailsOpen, setIsPlanDetailsOpen] = useState(false);
   const [isSuperAdminOpen, setIsSuperAdminOpen] = useState(false);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [user, setUser] = useState<UserProfile>({
     id: 'guest',
@@ -333,8 +335,15 @@ const AppInner: React.FC = () => {
             </div>
 
             <button
+              onClick={() => setIsSupportOpen(true)}
+              style={{ padding: '7px 12px', borderRadius: '10px', border: '1px solid rgba(78, 222, 163, 0.5)', background: 'rgba(78, 222, 163, 0.15)', color: '#4edea3', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', flexShrink: 0 }}
+            >
+              <Headset size={15} /> <span className="header-btn-text" style={{ whiteSpace: 'nowrap' }}>{t('support.nav_btn', '🎧 고객센터 & 1:1 문의')}</span>
+            </button>
+
+            <button
               onClick={() => setIsPlanDetailsOpen(true)}
-              style={{ padding: '7px 12px', borderRadius: '10px', border: '1px solid rgba(76, 215, 246, 0.5)', background: 'rgba(76, 215, 246, 0.15)', color: '#4cd7f6', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', flexShrink: 0 }}
+              style={{ padding: '7px 14px', borderRadius: '10px', border: '1px solid rgba(76, 215, 246, 0.4)', background: 'rgba(76, 215, 246, 0.15)', color: '#4cd7f6', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', flexShrink: 0 }}
             >
               <Sparkles size={15} /> <span className="header-btn-text" style={{ whiteSpace: 'nowrap' }}>{t('nav.plan_details', '구독 혜택 & 서비스 상세')}</span>
             </button>
@@ -375,6 +384,10 @@ const AppInner: React.FC = () => {
           
           <footer style={{ marginTop: '48px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)', textAlign: 'center', fontSize: '0.85rem', color: '#bcc9cd', fontWeight: 700 }}>
             <div className="footer-links-responsive" style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+              <button onClick={() => setIsSupportOpen(true)} style={{ background: 'none', border: 'none', color: '#4edea3', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Headset size={14} /> 고객센터 (glassidentt.rab@gmail.com)
+              </button>
+              <span>|</span>
               <button onClick={() => handleOpenPrivacyTerms('privacy')} style={{ background: 'none', border: 'none', color: '#4cd7f6', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline' }}>{t('footer.privacy', '개인정보 처리방침')}</button>
               <span>|</span>
               <button onClick={() => handleOpenPrivacyTerms('terms')} style={{ background: 'none', border: 'none', color: '#bcc9cd', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline' }}>{t('footer.terms', '이용약관')}</button>
@@ -412,6 +425,11 @@ const AppInner: React.FC = () => {
       <SuperAdminDashboardModal
         isOpen={isSuperAdminOpen}
         onClose={() => setIsSuperAdminOpen(false)}
+      />
+
+      <ContactSupportModal
+        isOpen={isSupportOpen}
+        onClose={() => setIsSupportOpen(false)}
       />
     </div>
   );

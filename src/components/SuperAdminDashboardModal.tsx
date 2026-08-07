@@ -114,6 +114,7 @@ export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> =
     const newKey = await createApiKeyDB({
       company_name: orgName,
       key_name: `${orgName} Live Key`,
+      api_key_hash: `deeptech_live_key_${Math.random().toString(36).substring(2, 12)}`,
       rate_limit_per_min: 1000,
       allowed_ip_range: '0.0.0.0/0'
     });
@@ -1014,7 +1015,7 @@ export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> =
 
                       <div style={{ display: 'flex', gap: '10px' }}>
                         <button
-                          onClick={() => handleDeleteApiKey(key.id, key.key_name)}
+                          onClick={() => handleDeleteApiKey(key.id || '', key.key_name)}
                           style={{
                             padding: '8px 14px',
                             borderRadius: '8px',

@@ -143,11 +143,6 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>itution || 'Aetheria BioTech Institute'} ({user.email})
-              </p>
-            </div>
-          </div>
-
           <div style={{ display: 'flex', gap: '12px' }}>
             {user.plan === 'free' && (
               <button

@@ -27,9 +27,15 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
 
   // User Edit State
   const [nameInput, setNameInput] = useState(user.name);
-  const [institutionInput, setInstitutionInput] = useState(user.institution || 'Aetheria BioTech Institute');
-  const [titleInput, setTitleInput] = useState(user.title || 'Senior Principal Researcher');
+  const [institutionInput, setInstitutionInput] = useState(user.institution || '');
+  const [titleInput, setTitleInput] = useState(user.title || '');
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
+
+  useEffect(() => {
+    setNameInput(user.name);
+    setInstitutionInput(user.institution || '');
+    setTitleInput(user.title || '');
+  }, [user]);
 
   // Sync Supabase Audit Logs
   useEffect(() => {
@@ -45,7 +51,8 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
   const [vaultTargets, setVaultTargets] = useState<{ key: string; name: string; symbol: string; dept: string; deptKey: SaasCategory }[]>(() => {
     try {
       const stored = localStorage.getItem('aetheria_target_vault');
-      const keys: string[] = stored ? JSON.parse(stored) : ['TAU', 'PCSK9', 'PDL1'];
+      if (!stored) return [];
+      const keys: string[] = JSON.parse(stored);
 
       const detailMap: Record<string, { name: string; symbol: string; dept: string; deptKey: SaasCategory }> = {
         TAU: { name: 'Microtubule-Associated Protein Tau', symbol: 'MAPT', dept: '신경외과', deptKey: 'neurosurgery' },
@@ -69,10 +76,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
         deptKey: detailMap[k]?.deptKey || 'neurosurgery'
       })) as any;
     } catch {
-      return [
-        { key: 'TAU', name: 'Microtubule-Associated Protein Tau', symbol: 'MAPT', dept: '신경외과', deptKey: 'neurosurgery' },
-        { key: 'PCSK9', name: 'Proprotein Convertase Subtilisin 9', symbol: 'PCSK9', dept: '순환기내과', deptKey: 'cardiology' }
-      ] as any;
+      return [];
     }
   });
 

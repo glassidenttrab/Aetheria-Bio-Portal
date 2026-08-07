@@ -27,11 +27,11 @@ export const AuthCheckoutModal: React.FC<AuthCheckoutModalProps> = ({
   
   // Tabs: 'signup' (회원가입), 'login' (로그인), 'checkout' (결제), 'success' (완료)
   const [modalTab, setModalTab] = useState<'signup' | 'login' | 'checkout' | 'success'>('signup');
-  const [email, setEmail] = useState(user.email || 'scientist@aetheria.bio');
-  const [name, setName] = useState(user.name || 'Dr. Seung-Woo Kim');
-  const [password, setPassword] = useState('••••••••••••');
+  const [email, setEmail] = useState(user.email || '');
+  const [name, setName] = useState(user.name || '');
+  const [password, setPassword] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'credit_card'>('paypal');
-  const [cardNumber, setCardNumber] = useState('4242 •••• •••• 4242');
+  const [cardNumber, setCardNumber] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<PaymentReceipt | null>(null);

@@ -13,10 +13,12 @@ import {
   Globe, ChevronDown, Star, Menu, X
 } from 'lucide-react';
 
+import { useAuth } from './contexts/AuthContext';
 import { fetchUserProfileDB, upsertUserProfileDB, recordSubscriptionDB } from './services/supabaseService';
 
 const AppInner: React.FC = () => {
   const { language, setLanguage, t, supportedLanguages, currentLanguageObj } = useLanguage();
+  const { user: authUser } = useAuth();
   const [activeCategory, setActiveCategory] = useState<SaasCategory>('overview_about');
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
@@ -37,34 +39,40 @@ const AppInner: React.FC = () => {
   const [isSuperAdminOpen, setIsSuperAdminOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [user, setUser] = useState<UserProfile>({
-    id: 'user-001',
-    name: 'Dr. Seung-Woo Kim',
-    email: 'scientist@aetheria.bio',
+    id: 'guest',
+    name: '신규 연구원',
+    email: '',
     plan: 'free',
-    institution: 'Aetheria BioTech Institute',
-    title: 'Senior Principal Researcher',
+    institution: '',
+    title: '',
     queriesRemaining: 3
   });
 
-  // 1. Supabase DB 마운트 시 프로필 동기화
+  // 1. Supabase DB & Auth 마운트 시 실시간 로그인 유저 프로필 동기화
   useEffect(() => {
     const syncDbUser = async () => {
-      const dbProfile = await fetchUserProfileDB('scientist@aetheria.bio');
-      if (dbProfile) {
-        setUser(dbProfile);
-      } else {
-        await upsertUserProfileDB({
-          email: 'scientist@aetheria.bio',
-          name: 'Dr. Seung-Woo Kim',
-          institution: 'Aetheria BioTech Institute',
-          title: 'Senior Principal Researcher',
-          plan: 'free',
-          queriesRemaining: 3
-        });
+      if (authUser && authUser.email) {
+        const dbProfile = await fetchUserProfileDB(authUser.email);
+        if (dbProfile) {
+          setUser(dbProfile);
+        } else {
+          const defaultName = authUser.displayName || authUser.email.split('@')[0] || '신규 연구원';
+          const newProfile: UserProfile = {
+            id: authUser.uid,
+            name: defaultName,
+            email: authUser.email,
+            plan: 'free',
+            institution: 'Aetheria Research Lab',
+            title: 'Principal Investigator',
+            queriesRemaining: 3
+          };
+          setUser(newProfile);
+          await upsertUserProfileDB(newProfile);
+        }
       }
     };
     syncDbUser();
-  }, []);
+  }, [authUser]);
 
   const handleUpdateUser = (updated: Partial<UserProfile>) => {
     setUser(prev => {

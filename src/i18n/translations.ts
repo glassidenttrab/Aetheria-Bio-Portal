@@ -277,10 +277,28 @@ export const translations: Record<Language, Record<string, string>> = {
     'skills.banner_title': '38+ 사이언스 스킬 & 라이브 전 세계 빅데이터 연동',
     'skills.banner_desc': 'PubMed(3,500만+), OpenAlex(2.5억+), ClinicalTrials(45만+), AlphaFold DB(2억+) 등 인류 최대의 생의학/임상 라이브 데이터베이스와 실시간 통신합니다.',
 
-    // Footer
+    // Footer & Support
     'footer.rights': 'All Rights Reserved. Aetheria Bio Portal.',
     'footer.privacy': '개인정보 처리방침',
-    'footer.terms': '이용약관'
+    'footer.terms': '이용약관',
+    'footer.support': '고객센터 (glassidentt.rab@gmail.com)',
+    'support.nav_btn': '🎧 고객센터 & 1:1 문의',
+    'support.title': '고객센터 & 1:1 기술 지원 문의',
+    'support.subtitle': 'Aetheria Bio 전담 지원팀이 glassidentt.rab@gmail.com으로 빠르게 답변드립니다.',
+    'support.success_title': '문의가 성공적으로 접수되었습니다!',
+    'support.label_type': '문의 유형 선택',
+    'support.type_tech': '🛠️ 기술 / 스킬 문의',
+    'support.type_b2b': '🏢 B2B 제약사 제휴',
+    'support.type_billing': '💳 결제 / 구독 문의',
+    'support.type_fto': '⚖️ FTO 특허 판단',
+    'support.label_name': '성함',
+    'support.label_email': '답변받으실 이메일',
+    'support.label_org': '소속 기관',
+    'support.label_subject': '문의 제목',
+    'support.placeholder_subject': '문의 제목을 입력하세요',
+    'support.label_message': '문의 상세 내용',
+    'support.placeholder_message': '궁금하신 점이나 기술 지원이 필요한 내용을 자유롭게 적어주세요.',
+    'support.btn_send': '1:1 문의 메일 발송하기'
   },
 
   en: {
@@ -638,7 +656,25 @@ export const translations: Record<Language, Record<string, string>> = {
     'legal.t_sec3_disclaimer': 'IMPORTANT: All biomedical scanning results are research assistance tools. Final clinical diagnosis and medical decisions must be made by qualified healthcare professionals.',
     'legal.t_sec4_title': 'Article 4 (Intellectual Property)',
     'legal.t_sec4_content': 'All 38 science skill pipelines, AI algorithms, and trademarks belong to Aetheria Bio, granting commercial usage rights to active subscribers.',
-    'legal.confirm': 'Confirm & Close'
+    'legal.confirm': 'Confirm & Close',
+    'footer.support': 'Customer Support (glassidentt.rab@gmail.com)',
+    'support.nav_btn': '🎧 Support & 1:1 Inquiry',
+    'support.title': 'Customer Support & 1:1 Technical Support',
+    'support.subtitle': 'Aetheria Bio dedicated support team responds promptly via glassidentt.rab@gmail.com.',
+    'support.success_title': 'Inquiry submitted successfully!',
+    'support.label_type': 'Select Inquiry Type',
+    'support.type_tech': '🛠️ Technical & Skill Inquiry',
+    'support.type_b2b': '🏢 B2B Pharma Partnership',
+    'support.type_billing': '💳 Billing & Subscription',
+    'support.type_fto': '⚖️ FTO Patent Assessment',
+    'support.label_name': 'Full Name',
+    'support.label_email': 'Reply Email Address',
+    'support.label_org': 'Institution / Organization',
+    'support.label_subject': 'Subject',
+    'support.placeholder_subject': 'Enter inquiry subject',
+    'support.label_message': 'Detailed Message',
+    'support.placeholder_message': 'Please describe your question or technical support request in detail.',
+    'support.btn_send': 'Send 1:1 Support Email'
   },
 
   ja: {
@@ -987,7 +1023,25 @@ export const translations: Record<Language, Record<string, string>> = {
     'legal.t_sec3_disclaimer': '重要：当ポータルの解析結果はバイオ・創薬研究の補助ツールであり、最終的な臨床診断・治療の決定は専門医療従事者の判断に従ってください。',
     'legal.t_sec4_title': '第4条（知的財産権および権利帰属）',
     'legal.t_sec4_content': 'すべてのスキルパイプライン、AIアルゴリズムおよび商標権は当社に帰属し、会員には研究目的の商用利用権が付与されます。',
-    'legal.confirm': '確認して閉じる'
+    'legal.confirm': '確認して閉じる',
+    'footer.support': 'カスタマーサポート (glassidentt.rab@gmail.com)',
+    'support.nav_btn': '🎧 カスタマーサポート＆1:1問合せ',
+    'support.title': 'カスタマーサポート＆1:1技術支援問合せ',
+    'support.subtitle': 'Aetheria Bio専任サポートチームがglassidentt.rab@gmail.comより迅速に回答いたします。',
+    'support.success_title': 'お問合せ가 正常に送信されました！',
+    'support.label_type': 'お問合せ種類の選択',
+    'support.type_tech': '🛠️ 技術・スキル問合せ',
+    'support.type_b2b': '🏢 B2B製薬パートナーシップ',
+    'support.type_billing': '💳 決済・購読問合せ',
+    'support.type_fto': '⚖️ FTO特許判断',
+    'support.label_name': 'お名前',
+    'support.label_email': '返信先メールアドレス',
+    'support.label_org': '所属機関',
+    'support.label_subject': '件名',
+    'support.placeholder_subject': '件名を入力してください',
+    'support.label_message': '詳細内容',
+    'support.placeholder_message': 'ご質問や技術支援が必要な内容をご自由にご記入ください。',
+    'support.btn_send': '1:1問合せメールを送信する'
   },
 
   zh: {
@@ -1336,7 +1390,25 @@ export const translations: Record<Language, Record<string, string>> = {
     'legal.t_sec3_disclaimer': '重要提示：本门户提供的生物医学分析结果仅作为科研辅助工具，最终的临床诊断与医疗决策须遵循专业医务人员的判断。',
     'legal.t_sec4_title': '第四条（知识产权及权利归属）',
     'legal.t_sec4_content': '所有 38 项技能流水线、AI 算法及商标权均归本公司所有，订阅会员享有科研目的的商业使用权。',
-    'legal.confirm': '确认并关闭'
+    'legal.confirm': '确认并关闭',
+    'footer.support': '客服中心 (glassidentt.rab@gmail.com)',
+    'support.nav_btn': '🎧 客服中心与1:1咨询',
+    'support.title': '客服中心与1:1技术支持咨询',
+    'support.subtitle': 'Aetheria Bio专属支持团队将通过 glassidentt.rab@gmail.com 快速回复您。',
+    'support.success_title': '咨询已成功提交！',
+    'support.label_type': '选择咨询类型',
+    'support.type_tech': '🛠️ 技术与技能咨询',
+    'support.type_b2b': '🏢 B2B药企合作',
+    'support.type_billing': '💳 支付与订阅咨询',
+    'support.type_fto': '⚖️ FTO专利判断',
+    'support.label_name': '姓名',
+    'support.label_email': '接收回复的邮箱',
+    'support.label_org': '所属机构',
+    'support.label_subject': '咨询主题',
+    'support.placeholder_subject': '请输入主题',
+    'support.label_message': '详细内容',
+    'support.placeholder_message': '请详细描述您的问题或需要的技术支持内容。',
+    'support.btn_send': '发送1:1咨询邮件'
   },
 
   es: {
@@ -1672,7 +1744,25 @@ export const translations: Record<Language, Record<string, string>> = {
     'legal.t_sec3_disclaimer': 'IMPORTANTE: Los resultados de análisis son herramientas de asistencia en investigación. El diagnóstico clínico final debe ser realizado por profesionales médicos.',
     'legal.t_sec4_title': 'Artículo 4 (Propiedad Intelectual)',
     'legal.t_sec4_content': 'Todas las 38 habilidades, algoritmos de IA y marcas pertenecen a Aetheria Bio, otorgando licencias de uso comercial a suscriptores activos.',
-    'legal.confirm': 'Confirmar y Cerrar'
+    'legal.confirm': 'Confirmar y Cerrar',
+    'footer.support': 'Atención al Cliente (glassidentt.rab@gmail.com)',
+    'support.nav_btn': '🎧 Soporte y Atención 1:1',
+    'support.title': 'Centro de Atención y Soporte Técnico 1:1',
+    'support.subtitle': 'El equipo de soporte dedicado de Aetheria Bio responderá rápidamente a través de glassidentt.rab@gmail.com.',
+    'support.success_title': '¡Consulta enviada con éxito!',
+    'support.label_type': 'Seleccionar Tipo de Consulta',
+    'support.type_tech': '🛠️ Consulta Técnica',
+    'support.type_b2b': '🏢 Asociación B2B',
+    'support.type_billing': '💳 Facturación y Suscripción',
+    'support.type_fto': '⚖️ Patentes FTO',
+    'support.label_name': 'Nombre Completo',
+    'support.label_email': 'Correo de Respuesta',
+    'support.label_org': 'Institución',
+    'support.label_subject': 'Asunto',
+    'support.placeholder_subject': 'Ingrese el asunto de su consulta',
+    'support.label_message': 'Detalles del Mensaje',
+    'support.placeholder_message': 'Describa su pregunta o consulta técnica en detalle.',
+    'support.btn_send': 'Enviar Correo de Soporte 1:1'
   },
 
   de: {
@@ -2008,7 +2098,25 @@ export const translations: Record<Language, Record<string, string>> = {
     'legal.t_sec3_disclaimer': 'WICHTIG: Alle Analyseergebnisse sind Forschungshilfsmittel. Die finale klinische Diagnose muss von qualifiziertem medizinischen Fachpersonal gestellt werden.',
     'legal.t_sec4_title': 'Artikel 4 (Geistiges Eigentum)',
     'legal.t_sec4_content': 'Alle 38 Skill-Pipelines, KI-Algorithmen und Marken gehören Aetheria Bio und gewähren aktiven Abonnenten kommerzielle Nutzungsrechte.',
-    'legal.confirm': 'Bestätigen & Schließen'
+    'legal.confirm': 'Bestätigen & Schließen',
+    'footer.support': 'Kundenservice (glassidentt.rab@gmail.com)',
+    'support.nav_btn': '🎧 Support & 1:1-Anfrage',
+    'support.title': 'Kundenservice & Technischer Support',
+    'support.subtitle': 'Das engagierte Support-Team von Aetheria Bio antwortet Ihnen umgehend über glassidentt.rab@gmail.com.',
+    'support.success_title': 'Anfrage erfolgreich übermittelt!',
+    'support.label_type': 'Anfragetyp Auswählen',
+    'support.type_tech': '🛠️ Technik & Skill-Anfrage',
+    'support.type_b2b': '🏢 B2B-Partnerschaft',
+    'support.type_billing': '💳 Abrechnung & Abo',
+    'support.type_fto': '⚖️ FTO-Patentbewertung',
+    'support.label_name': 'Vollständiger Name',
+    'support.label_email': 'Antwort-E-Mail-Adresse',
+    'support.label_org': 'Institution / Organisation',
+    'support.label_subject': 'Betreff',
+    'support.placeholder_subject': 'Betreff eingeben',
+    'support.label_message': 'Detaillierte Nachricht',
+    'support.placeholder_message': 'Bitte beschreiben Sie Ihre Frage oder technische Anfrage im Detail.',
+    'support.btn_send': '1:1-Support-E-Mail Senden'
   },
 
   it: {
@@ -2344,7 +2452,25 @@ export const translations: Record<Language, Record<string, string>> = {
     'legal.t_sec3_disclaimer': 'IMPORTANTE: I risultati sono strumenti di supporto alla ricerca. Le decisioni cliniche devono essere prese da medici qualificati.',
     'legal.t_sec4_title': 'Articolo 4 (Proprietà Intellettuale)',
     'legal.t_sec4_content': 'Tutte le 38 competenze, gli algoritmi IA e i marchi appartengono ad Aetheria Bio, concedendo licenze d\'uso agli abbonati.',
-    'legal.confirm': 'Conferma e Chiudi'
+    'legal.confirm': 'Conferma e Chiudi',
+    'footer.support': 'Assistenza Clienti (glassidentt.rab@gmail.com)',
+    'support.nav_btn': '🎧 Supporto e Assistenza 1:1',
+    'support.title': 'Centro Assistenza e Supporto Tecnico 1:1',
+    'support.subtitle': 'Il team di supporto dedicato di Aetheria Bio risponderà tempestivamente tramite glassidentt.rab@gmail.com.',
+    'support.success_title': 'Richiesta inviata con successo!',
+    'support.label_type': 'Seleziona Tipo di Richiesta',
+    'support.type_tech': '🛠️ Richiesta Tecnica',
+    'support.type_b2b': '🏢 Partnership B2B',
+    'support.type_billing': '💳 Fatturazione e Abbonamento',
+    'support.type_fto': '⚖️ Brevetti FTO',
+    'support.label_name': 'Nome e Cognome',
+    'support.label_email': 'Email di Risposta',
+    'support.label_org': 'Ente / Organizzazione',
+    'support.label_subject': 'Oggetto',
+    'support.placeholder_subject': "Inserisci l'oggetto",
+    'support.label_message': 'Dettagli del Messaggio',
+    'support.placeholder_message': 'Descrivi in dettaglio la tua domanda o richiesta di supporto.',
+    'support.btn_send': 'Invia Email di Supporto 1:1'
   },
 
   fr: {
@@ -2680,6 +2806,24 @@ export const translations: Record<Language, Record<string, string>> = {
     'legal.t_sec3_disclaimer': 'IMPORTANT : Les résultats d\'analyse sont des outils d\'aide à la recherche. Le diagnostic clinique final doit être posé par des professionnels de santé.',
     'legal.t_sec4_title': 'Article 4 (Propriété Intellectuelle)',
     'legal.t_sec4_content': 'Toutes les 38 compétences, algorithmes d\'IA et marques appartiennent à Aetheria Bio, accordant des droits d\'utilisation commerciale aux abonnés.',
-    'legal.confirm': 'Confirmer et Fermer'
+    'legal.confirm': 'Confirmer et Fermer',
+    'footer.support': 'Service Client (glassidentt.rab@gmail.com)',
+    'support.nav_btn': "🎧 Support et Assistance 1:1",
+    'support.title': "Centre d'Assistance et Support Technique 1:1",
+    'support.subtitle': "L'équipe d'assistance dédiée d'Aetheria Bio répondra rapidement via glassidentt.rab@gmail.com.",
+    'support.success_title': 'Demande envoyée avec succès !',
+    'support.label_type': 'Sélectionner le Type de Demande',
+    'support.type_tech': '🛠️ Assistance Technique',
+    'support.type_b2b': '🏢 Partenariat B2B',
+    'support.type_billing': '💳 Facturation & Abonnement',
+    'support.type_fto': '⚖️ Brevets FTO',
+    'support.label_name': 'Nom Complet',
+    'support.label_email': 'Adresse E-mail de Réponse',
+    'support.label_org': 'Institution / Organisation',
+    'support.label_subject': 'Sujet',
+    'support.placeholder_subject': 'Entrez le sujet de votre demande',
+    'support.label_message': 'Détails du Message',
+    'support.placeholder_message': "Veuillez décrire votre question ou demande d'assistance technique en détail.",
+    'support.btn_send': 'Envoyer un E-mail 1:1'
   }
 };

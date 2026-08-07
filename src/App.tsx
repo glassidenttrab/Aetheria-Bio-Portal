@@ -385,7 +385,7 @@ const AppInner: React.FC = () => {
           <footer style={{ marginTop: '48px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)', textAlign: 'center', fontSize: '0.85rem', color: '#bcc9cd', fontWeight: 700 }}>
             <div className="footer-links-responsive" style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
               <button onClick={() => setIsSupportOpen(true)} style={{ background: 'none', border: 'none', color: '#4edea3', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <Headset size={14} /> 고객센터 (glassidentt.rab@gmail.com)
+                <Headset size={14} /> {t('footer.support', '고객센터 (glassidentt.rab@gmail.com)')}
               </button>
               <span>|</span>
               <button onClick={() => handleOpenPrivacyTerms('privacy')} style={{ background: 'none', border: 'none', color: '#4cd7f6', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline' }}>{t('footer.privacy', '개인정보 처리방침')}</button>

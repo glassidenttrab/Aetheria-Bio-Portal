@@ -143,15 +143,15 @@ Status: High Freedom to Operate (FTO Clear)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       {/* Category Hero Banner */}
-      <div className="glass-panel p-8" style={{ border: '1px solid rgba(76, 215, 246, 0.3)', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(11, 19, 38, 0.98) 100%)', position: 'relative', overflow: 'hidden' }}>
+      <div className="glass-panel" style={{ padding: '36px 40px', border: '1px solid rgba(76, 215, 246, 0.35)', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(11, 19, 38, 0.98) 100%)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', right: '-40px', top: '-40px', opacity: 0.2, pointerEvents: 'none' }}>
           <img src="/public/molecular_structure.jpg" alt="Bio Background" style={{ width: '480px', height: '320px', objectFit: 'cover', borderRadius: '24px' }} />
         </div>
 
         <div style={{ position: 'relative', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 14px', borderRadius: '20px', background: 'rgba(76, 215, 246, 0.15)', border: '1px solid rgba(76, 215, 246, 0.5)', color: '#4cd7f6', fontSize: '0.8rem', fontWeight: 800, marginBottom: '14px' }}>
-              <Sparkles size={14} /> 38 Science Skills Powered Bio Portal
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 18px', borderRadius: '20px', background: 'rgba(76, 215, 246, 0.15)', border: '1px solid rgba(76, 215, 246, 0.5)', color: '#4cd7f6', fontSize: '0.82rem', fontWeight: 800, marginTop: '4px', marginBottom: '20px' }}>
+              <Sparkles size={15} /> 38 Science Skills Powered Bio Portal
             </div>
 
             <h2 style={{ fontSize: '2.4rem', fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -168,12 +168,12 @@ Status: High Freedom to Operate (FTO Clear)
               {activeCategory === 'longevity' && <>⏳ {t('dept.longevity', '안티에이징')} <span style={{ color: '#4edea3', background: 'rgba(78, 222, 163, 0.1)', padding: '2px 10px', borderRadius: '8px' }}>{t('saas.title_suffix', 'AI 표적 스캐너')}</span></>}
             </h2>
 
-            <p style={{ color: '#dae2fd', fontSize: '0.98rem', maxWidth: '880px', marginTop: '12px', lineHeight: '1.6' }}>
+            <p style={{ color: '#dae2fd', fontSize: '0.98rem', maxWidth: '880px', marginTop: '14px', lineHeight: '1.65' }}>
               {t(`dept.desc_${activeCategory}`, t('hero.desc'))}
             </p>
           </div>
 
-          <div style={{ padding: '18px 22px', background: 'rgba(23, 31, 51, 0.9)', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.15)', minWidth: '230px', position: 'relative', zIndex: 10 }}>
+          <div style={{ padding: '20px 24px', background: 'rgba(23, 31, 51, 0.9)', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.15)', minWidth: '230px', position: 'relative', zIndex: 10 }}>
             <div style={{ fontSize: '0.75rem', color: '#bcc9cd', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('auth.plan_summary', '구독 라이선스 상태')}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
               {user.plan === 'enterprise' ? (
@@ -204,25 +204,25 @@ Status: High Freedom to Operate (FTO Clear)
 
         {/* 10 Departments Navigation Bar (Integrated Horizontal Layout) */}
         <div style={{
-          display: 'flex', flexWrap: 'nowrap', gap: '5px', marginTop: '24px', width: '100%',
-          borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '16px',
+          display: 'flex', flexWrap: 'nowrap', gap: '8px', marginTop: '28px', width: '100%',
+          borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '20px',
           position: 'relative', zIndex: 10, overflowX: 'auto', msOverflowStyle: 'none', scrollbarWidth: 'none'
         }}>
-          <button onClick={() => { onSelectCategory('neurosurgery'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem', whiteSpace: 'nowrap', border: activeCategory === 'neurosurgery' ? '2px solid #4cd7f6' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'neurosurgery' ? 'rgba(76, 215, 246, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'neurosurgery' ? '#4cd7f6' : '#bcc9cd', transition: 'all 0.2s ease' }}>🧠 {t('dept.neurosurgery', '신경외과')}</button>
-          <button onClick={() => { onSelectCategory('neurology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem', whiteSpace: 'nowrap', border: activeCategory === 'neurology' ? '2px solid #4edea3' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'neurology' ? 'rgba(78, 222, 163, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'neurology' ? '#4edea3' : '#bcc9cd', transition: 'all 0.2s ease' }}>⚡ {t('dept.neurology', '신경과')}</button>
-          <button onClick={() => { onSelectCategory('orthopedics'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem', whiteSpace: 'nowrap', border: activeCategory === 'orthopedics' ? '2px solid #d0bcff' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'orthopedics' ? 'rgba(208, 188, 255, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'orthopedics' ? '#d0bcff' : '#bcc9cd', transition: 'all 0.2s ease' }}>🦴 {t('dept.orthopedics', '정형외과')}</button>
-          <button onClick={() => { onSelectCategory('psychiatry'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem', whiteSpace: 'nowrap', border: activeCategory === 'psychiatry' ? '2px solid #ffd700' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'psychiatry' ? 'rgba(255, 215, 0, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'psychiatry' ? '#ffd700' : '#bcc9cd', transition: 'all 0.2s ease' }}>😊 {t('dept.psychiatry', '정신건강의학과')}</button>
-          <button onClick={() => { onSelectCategory('cardiology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem', whiteSpace: 'nowrap', border: activeCategory === 'cardiology' ? '2px solid #ff6b81' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'cardiology' ? 'rgba(255, 99, 132, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'cardiology' ? '#ff6b81' : '#bcc9cd', transition: 'all 0.2s ease' }}>❤️ {t('dept.cardiology', '순환기내과')}</button>
-          <button onClick={() => { onSelectCategory('oncology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem', whiteSpace: 'nowrap', border: activeCategory === 'oncology' ? '2px solid #4cd7f6' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'oncology' ? 'rgba(76, 215, 246, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'oncology' ? '#4cd7f6' : '#bcc9cd', transition: 'all 0.2s ease' }}>🩺 {t('dept.oncology', '종양내과')}</button>
-          <button onClick={() => { onSelectCategory('endocrinology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem', whiteSpace: 'nowrap', border: activeCategory === 'endocrinology' ? '2px solid #4edea3' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'endocrinology' ? 'rgba(78, 222, 163, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'endocrinology' ? '#4edea3' : '#bcc9cd', transition: 'all 0.2s ease' }}>🧬 {t('dept.endocrinology', '내분비내과')}</button>
-          <button onClick={() => { onSelectCategory('immunology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem', whiteSpace: 'nowrap', border: activeCategory === 'immunology' ? '2px solid #d0bcff' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'immunology' ? 'rgba(208, 188, 255, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'immunology' ? '#d0bcff' : '#bcc9cd', transition: 'all 0.2s ease' }}>🛡️ {t('dept.immunology', '류마티스/면역')}</button>
-          <button onClick={() => { onSelectCategory('dermatology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem', whiteSpace: 'nowrap', border: activeCategory === 'dermatology' ? '2px solid #ffd700' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'dermatology' ? 'rgba(255, 215, 0, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'dermatology' ? '#ffd700' : '#bcc9cd', transition: 'all 0.2s ease' }}>✨ {t('dept.dermatology', '피부과')}</button>
-          <button onClick={() => { onSelectCategory('ophthalmology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem', whiteSpace: 'nowrap', border: activeCategory === 'ophthalmology' ? '2px solid #4cd7f6' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'ophthalmology' ? 'rgba(76, 215, 246, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'ophthalmology' ? '#4cd7f6' : '#bcc9cd', transition: 'all 0.2s ease' }}>👁️ {t('dept.ophthalmology', '안과')}</button>
-          <button onClick={() => { onSelectCategory('longevity'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem', whiteSpace: 'nowrap', border: activeCategory === 'longevity' ? '2px solid #4edea3' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'longevity' ? 'rgba(78, 222, 163, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'longevity' ? '#4edea3' : '#bcc9cd', transition: 'all 0.2s ease' }}>⏳ {t('dept.longevity', '안티에이징')}</button>
+          <button onClick={() => { onSelectCategory('neurosurgery'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap', border: activeCategory === 'neurosurgery' ? '2px solid #4cd7f6' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'neurosurgery' ? 'rgba(76, 215, 246, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'neurosurgery' ? '#4cd7f6' : '#bcc9cd', transition: 'all 0.2s ease' }}>🧠 {t('dept.neurosurgery', '신경외과')}</button>
+          <button onClick={() => { onSelectCategory('neurology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap', border: activeCategory === 'neurology' ? '2px solid #4edea3' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'neurology' ? 'rgba(78, 222, 163, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'neurology' ? '#4edea3' : '#bcc9cd', transition: 'all 0.2s ease' }}>⚡ {t('dept.neurology', '신경과')}</button>
+          <button onClick={() => { onSelectCategory('orthopedics'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap', border: activeCategory === 'orthopedics' ? '2px solid #d0bcff' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'orthopedics' ? 'rgba(208, 188, 255, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'orthopedics' ? '#d0bcff' : '#bcc9cd', transition: 'all 0.2s ease' }}>🦴 {t('dept.orthopedics', '정형외과')}</button>
+          <button onClick={() => { onSelectCategory('psychiatry'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap', border: activeCategory === 'psychiatry' ? '2px solid #ffd700' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'psychiatry' ? 'rgba(255, 215, 0, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'psychiatry' ? '#ffd700' : '#bcc9cd', transition: 'all 0.2s ease' }}>😊 {t('dept.psychiatry', '정신건강의학과')}</button>
+          <button onClick={() => { onSelectCategory('cardiology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap', border: activeCategory === 'cardiology' ? '2px solid #ff6b81' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'cardiology' ? 'rgba(255, 99, 132, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'cardiology' ? '#ff6b81' : '#bcc9cd', transition: 'all 0.2s ease' }}>❤️ {t('dept.cardiology', '순환기내과')}</button>
+          <button onClick={() => { onSelectCategory('oncology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap', border: activeCategory === 'oncology' ? '2px solid #4cd7f6' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'oncology' ? 'rgba(76, 215, 246, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'oncology' ? '#4cd7f6' : '#bcc9cd', transition: 'all 0.2s ease' }}>🩺 {t('dept.oncology', '종양내과')}</button>
+          <button onClick={() => { onSelectCategory('endocrinology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap', border: activeCategory === 'endocrinology' ? '2px solid #4edea3' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'endocrinology' ? 'rgba(78, 222, 163, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'endocrinology' ? '#4edea3' : '#bcc9cd', transition: 'all 0.2s ease' }}>🧬 {t('dept.endocrinology', '내분비내과')}</button>
+          <button onClick={() => { onSelectCategory('immunology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap', border: activeCategory === 'immunology' ? '2px solid #d0bcff' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'immunology' ? 'rgba(208, 188, 255, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'immunology' ? '#d0bcff' : '#bcc9cd', transition: 'all 0.2s ease' }}>🛡️ {t('dept.immunology', '류마티스/면역')}</button>
+          <button onClick={() => { onSelectCategory('dermatology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap', border: activeCategory === 'dermatology' ? '2px solid #ffd700' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'dermatology' ? 'rgba(255, 215, 0, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'dermatology' ? '#ffd700' : '#bcc9cd', transition: 'all 0.2s ease' }}>✨ {t('dept.dermatology', '피부과')}</button>
+          <button onClick={() => { onSelectCategory('ophthalmology'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap', border: activeCategory === 'ophthalmology' ? '2px solid #4cd7f6' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'ophthalmology' ? 'rgba(76, 215, 246, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'ophthalmology' ? '#4cd7f6' : '#bcc9cd', transition: 'all 0.2s ease' }}>👁️ {t('dept.ophthalmology', '안과')}</button>
+          <button onClick={() => { onSelectCategory('longevity'); setSearchQuery(''); setAnalysisResult(null); }} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap', border: activeCategory === 'longevity' ? '2px solid #4edea3' : '1px solid rgba(255,255,255,0.15)', background: activeCategory === 'longevity' ? 'rgba(78, 222, 163, 0.25)' : 'rgba(11, 19, 38, 0.7)', color: activeCategory === 'longevity' ? '#4edea3' : '#bcc9cd', transition: 'all 0.2s ease' }}>⏳ {t('dept.longevity', '안티에이징')}</button>
         </div>
 
         {/* Action Buttons: 3D Viewer & Skill Catalog & Target Vault */}
-        <div style={{ display: 'flex', gap: '12px', marginTop: '16px', position: 'relative', zIndex: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '16px', marginTop: '24px', position: 'relative', zIndex: 10, flexWrap: 'wrap' }}>
           <button
             onClick={() => {
               const deptProtein = DEPARTMENT_DEFAULT_PROTEINS[activeCategory];
@@ -238,41 +238,41 @@ Status: High Freedom to Operate (FTO Clear)
               }
             }}
             style={{
-              padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(76, 215, 246, 0.5)',
-              background: 'rgba(76, 215, 246, 0.15)', color: '#4cd7f6', fontWeight: 800, fontSize: '0.82rem',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px'
+              padding: '12px 22px', borderRadius: '12px', border: '1px solid rgba(76, 215, 246, 0.5)',
+              background: 'rgba(76, 215, 246, 0.15)', color: '#4cd7f6', fontWeight: 800, fontSize: '0.88rem',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s ease'
             }}
           >
-            <Box size={16} />
+            <Box size={18} />
             <span>{t('hero.btn_view', '3D 단백질 구조 뷰어 (AlphaFold 3D)')}</span>
           </button>
 
           <button
             onClick={() => setIsSkillCatalogOpen(true)}
             style={{
-              padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(78, 222, 163, 0.5)',
-              background: 'rgba(78, 222, 163, 0.15)', color: '#4edea3', fontWeight: 800, fontSize: '0.82rem',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px'
+              padding: '12px 22px', borderRadius: '12px', border: '1px solid rgba(78, 222, 163, 0.5)',
+              background: 'rgba(78, 222, 163, 0.15)', color: '#4edea3', fontWeight: 800, fontSize: '0.88rem',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s ease'
             }}
           >
-            <Terminal size={16} />
+            <Terminal size={18} />
             <span>{t('skills.catalog_btn', '38개 사이언스 스킬 카탈로그 탐색기')}</span>
           </button>
 
           <div style={{
-            padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255, 215, 0, 0.4)',
-            background: 'rgba(255, 215, 0, 0.1)', color: '#ffd700', fontWeight: 800, fontSize: '0.82rem',
-            display: 'flex', alignItems: 'center', gap: '6px'
+            padding: '12px 22px', borderRadius: '12px', border: '1px solid rgba(255, 215, 0, 0.4)',
+            background: 'rgba(255, 215, 0, 0.1)', color: '#ffd700', fontWeight: 800, fontSize: '0.88rem',
+            display: 'flex', alignItems: 'center', gap: '8px'
           }}>
-            <Star size={16} />
+            <Star size={18} />
             <span>{t('vault.title', '관심 표적 보관함')}: {savedVaultTargets.length}개</span>
           </div>
         </div>
 
         {/* Live Search & Target Cards */}
-        <div style={{ marginTop: '28px', position: 'relative', zIndex: 10 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
-            <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ marginTop: '36px', position: 'relative', zIndex: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Filter size={22} color="#4cd7f6" />
               <span>{t('saas.target_select', '실시간 표적 선택')} ({filteredTargetEntries.length})</span>
             </div>

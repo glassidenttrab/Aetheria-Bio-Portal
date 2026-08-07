@@ -115,7 +115,9 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       {/* Top Header Card */}
       <div className="glass-panel p-8" style={{ border: '1px solid rgba(76, 215, 246, 0.3)', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(11, 19, 38, 0.98) 100%)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: '            <div style={{
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{
               width: '64px', height: '64px', borderRadius: '20px',
               background: 'linear-gradient(135deg, #4cd7f6 0%, #1bbd85 100%)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: '1.8rem'
@@ -138,7 +140,10 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
               <p style={{ fontSize: '0.88rem', color: '#bcc9cd', margin: 0, marginTop: '4px' }}>
                 {user.title || user.institution ? `${user.title || ''} ${user.institution ? `@ ${user.institution}` : ''}` : '프로필 탭에서 연구자 정보를 등록해 보세요'} ({user.email || '등록 이메일 없음'})
               </p>
-            </div>user.institution || 'Aetheria BioTech Institute'} ({user.email})
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px' }}>itution || 'Aetheria BioTech Institute'} ({user.email})
               </p>
             </div>
           </div>

@@ -23,8 +23,54 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (e) {
       console.warn('LocalStorage unavailable for language preference', e);
     }
+
+    // 1차: 브라우저 navigator.language 자동 감지
+    const browserLang = (navigator.language || (navigator as any).userLanguage || '').toLowerCase();
+    if (browserLang.startsWith('ko')) return 'ko';
+    if (browserLang.startsWith('ja')) return 'ja';
+    if (browserLang.startsWith('zh')) return 'zh';
+    if (browserLang.startsWith('es')) return 'es';
+    if (browserLang.startsWith('de')) return 'de';
+    if (browserLang.startsWith('fr')) return 'fr';
+    if (browserLang.startsWith('it')) return 'it';
+
     return 'ko'; // 기본값: 한국어
   });
+
+  // 2차: IP GeoLocation 접속 국가 자동 감지 (Cloudflare / ipapi GeoIP Engine)
+  useEffect(() => {
+    const detectIpCountry = async () => {
+      try {
+        const savedLang = localStorage.getItem(STORAGE_KEY);
+        if (savedLang) return; // 유저가 수동 선택한 이력이 있으면 스킵
+
+        const res = await fetch('https://ipapi.co/json/', { cache: 'force-cache' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const country = (data.country_code || '').toUpperCase();
+
+        const countryToLangMap: Record<string, Language> = {
+          KR: 'ko',
+          JP: 'ja',
+          CN: 'zh', TW: 'zh', HK: 'zh',
+          ES: 'es', MX: 'es', AR: 'es', CO: 'es',
+          DE: 'de', AT: 'de',
+          FR: 'fr',
+          IT: 'it',
+          US: 'en', GB: 'en', CA: 'en', AU: 'en', NZ: 'en', IE: 'en', SG: 'en'
+        };
+
+        const targetLang = countryToLangMap[country];
+        if (targetLang && SUPPORTED_LANGUAGES.some(l => l.code === targetLang)) {
+          console.log(`[GeoIP Auto-Detect] Visitor IP Country: ${country} -> Auto Selected Language: ${targetLang}`);
+          setLanguageState(targetLang);
+        }
+      } catch (err) {
+        console.log('[GeoIP Notice] Using active session fallback language', err);
+      }
+    };
+    detectIpCountry();
+  }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);

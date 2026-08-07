@@ -2,108 +2,49 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
-  <!-- Main Portal Overview Page -->
+  <!-- Main Portal Homepage (Multilingual Supported) -->
   <url>
-    <loc>https://aetheriabio.com/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <loc>https://www.aetheria.bio/</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://aetheriabio.com/?lang=ko"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://aetheriabio.com/?lang=en"/>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://aetheriabio.com/?lang=ja"/>
-    <xhtml:link rel="alternate" hreflang="zh" href="https://aetheriabio.com/?lang=zh"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://aetheriabio.com/?lang=es"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://aetheriabio.com/?lang=de"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://aetheriabio.com/?lang=it"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://aetheriabio.com/?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aetheria.bio/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.aetheria.bio/?lang=ko" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aetheria.bio/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.aetheria.bio/?lang=ja" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.aetheria.bio/?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.aetheria.bio/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aetheria.bio/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.aetheria.bio/?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.aetheria.bio/?lang=it" />
   </url>
 
-  <!-- 1. Neurosurgery Scanner -->
+  <!-- 11 Medical Specialties Scanners -->
   <url>
-    <loc>https://aetheriabio.com/#neurosurgery</loc>
-    <lastmod>2026-08-06</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://www.aetheria.bio/?dept=neurosurgery</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.aetheria.bio/?dept=neurology</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.aetheria.bio/?dept=oncology</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- 2. Neurology Scanner -->
+  <!-- About & Service Overview -->
   <url>
-    <loc>https://aetheriabio.com/#neurology</loc>
-    <lastmod>2026-08-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- 3. Orthopedics Scanner -->
-  <url>
-    <loc>https://aetheriabio.com/#orthopedics</loc>
-    <lastmod>2026-08-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- 4. Psychiatry Scanner -->
-  <url>
-    <loc>https://aetheriabio.com/#psychiatry</loc>
-    <lastmod>2026-08-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- 5. Cardiology Scanner -->
-  <url>
-    <loc>https://aetheriabio.com/#cardiology</loc>
-    <lastmod>2026-08-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- 6. Oncology Scanner -->
-  <url>
-    <loc>https://aetheriabio.com/#oncology</loc>
-    <lastmod>2026-08-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- 7. Endocrinology Scanner -->
-  <url>
-    <loc>https://aetheriabio.com/#endocrinology</loc>
-    <lastmod>2026-08-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- 8. Immunology Scanner -->
-  <url>
-    <loc>https://aetheriabio.com/#immunology</loc>
-    <lastmod>2026-08-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- 9. Dermatology Scanner -->
-  <url>
-    <loc>https://aetheriabio.com/#dermatology</loc>
-    <lastmod>2026-08-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- 10. Ophthalmology Scanner -->
-  <url>
-    <loc>https://aetheriabio.com/#ophthalmology</loc>
-    <lastmod>2026-08-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- 11. Longevity & Anti-Aging Scanner -->
-  <url>
-    <loc>https://aetheriabio.com/#longevity</loc>
-    <lastmod>2026-08-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <loc>https://www.aetheria.bio/?view=overview</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 
 </urlset>

@@ -178,6 +178,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setMetaTag('og:description', currentSeo.desc, true);
     setMetaTag('og:locale', currentSeo.ogLocale, true);
     setMetaTag('geo.region', language === 'ko' ? 'KR' : language === 'ja' ? 'JP' : language === 'zh' ? 'CN' : 'US');
+
+    // 6. Canonical & Alternate Hreflang Dynamic Links
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', `https://www.aetheria.bio/?lang=${language}`);
   }, [language]);
 
   const currentLanguageObj = SUPPORTED_LANGUAGES.find(l => l.code === language) || SUPPORTED_LANGUAGES[0];

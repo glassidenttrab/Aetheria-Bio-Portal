@@ -1,6 +1,29 @@
-# Allow all Web Crawlers and Search Engines
+# Aetheria Bio Portal - Global Search Engine Robots Directive
+# Target Site: https://www.aetheria.bio/
+
 User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Global Search Engine Crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Yeti
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: GPTBot
 Allow: /
 
 # Sitemap Location
-Sitemap: https://aetheriabio.com/sitemap.xml
+Sitemap: https://www.aetheria.bio/sitemap.xml

@@ -115,19 +115,17 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       {/* Top Header Card */}
       <div className="glass-panel p-8" style={{ border: '1px solid rgba(76, 215, 246, 0.3)', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(11, 19, 38, 0.98) 100%)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <div style={{
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: '            <div style={{
               width: '64px', height: '64px', borderRadius: '20px',
               background: 'linear-gradient(135deg, #4cd7f6 0%, #1bbd85 100%)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: '1.8rem'
             }}>
-              {user.name.charAt(0)}
+              {user.name ? user.name.charAt(0) : <User size={32} />}
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#ffffff', margin: 0 }}>
-                  {user.name}
+                  {user.name || '성함 미설정 연구자'}
                 </h2>
                 {user.plan === 'enterprise' ? (
                   <span className="badge badge-gold" style={{ fontWeight: 800 }}><Crown size={14} /> Enterprise VIP</span>
@@ -138,7 +136,9 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                 )}
               </div>
               <p style={{ fontSize: '0.88rem', color: '#bcc9cd', margin: 0, marginTop: '4px' }}>
-                {user.title || 'Senior Principal Researcher'} @ {user.institution || 'Aetheria BioTech Institute'} ({user.email})
+                {user.title || user.institution ? `${user.title || ''} ${user.institution ? `@ ${user.institution}` : ''}` : '프로필 탭에서 연구자 정보를 등록해 보세요'} ({user.email || '등록 이메일 없음'})
+              </p>
+            </div>user.institution || 'Aetheria BioTech Institute'} ({user.email})
               </p>
             </div>
           </div>
@@ -233,8 +233,8 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                 type="text"
                 value={nameInput}
                 onChange={e => setNameInput(e.target.value)}
+                placeholder="예: 김승우 박사 / Dr. Seung-Woo Kim"
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(76, 215, 246, 0.3)', color: '#ffffff', fontSize: '0.92rem' }}
-                required
               />
             </div>
 
@@ -246,8 +246,8 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                 type="text"
                 value={institutionInput}
                 onChange={e => setInstitutionInput(e.target.value)}
+                placeholder="예: 서울대학교 의과대학 / Aetheria BioTech Institute"
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(76, 215, 246, 0.3)', color: '#ffffff', fontSize: '0.92rem' }}
-                required
               />
             </div>
 
@@ -259,8 +259,8 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                 type="text"
                 value={titleInput}
                 onChange={e => setTitleInput(e.target.value)}
+                placeholder="예: 책임연구원 / Senior Principal Researcher"
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(76, 215, 246, 0.3)', color: '#ffffff', fontSize: '0.92rem' }}
-                required
               />
             </div>
 

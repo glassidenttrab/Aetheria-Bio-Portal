@@ -40,7 +40,7 @@ const AppInner: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [user, setUser] = useState<UserProfile>({
     id: 'guest',
-    name: '신규 연구원',
+    name: '',
     email: '',
     plan: 'free',
     institution: '',
@@ -56,14 +56,14 @@ const AppInner: React.FC = () => {
         if (dbProfile) {
           setUser(dbProfile);
         } else {
-          const defaultName = authUser.displayName || authUser.email.split('@')[0] || '신규 연구원';
+          const defaultName = authUser.displayName || authUser.email.split('@')[0] || '';
           const newProfile: UserProfile = {
             id: authUser.uid,
             name: defaultName,
             email: authUser.email,
             plan: 'free',
-            institution: 'Aetheria Research Lab',
-            title: 'Principal Investigator',
+            institution: '',
+            title: '',
             queriesRemaining: 3
           };
           setUser(newProfile);

@@ -267,7 +267,7 @@ export const AuthCheckoutModal: React.FC<AuthCheckoutModalProps> = ({
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Dr. Seung-Woo Kim"
+                      placeholder="성함을 입력하세요 (예: 김승우 / Dr. Seung-Woo Kim)"
                       style={{
                         width: '100%', padding: '12px 14px 12px 42px', background: 'rgba(23, 31, 51, 0.8)',
                         border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', color: '#fff', fontSize: '0.95rem', outline: 'none'
@@ -288,7 +288,7 @@ export const AuthCheckoutModal: React.FC<AuthCheckoutModalProps> = ({
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="scientist@aetheria.bio"
+                    placeholder="이메일을 입력하세요 (예: scientist@aetheria.bio)"
                     style={{
                       width: '100%', padding: '12px 14px 12px 42px', background: 'rgba(23, 31, 51, 0.8)',
                       border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', color: '#fff', fontSize: '0.95rem', outline: 'none'

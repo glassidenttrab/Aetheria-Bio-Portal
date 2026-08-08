@@ -16,7 +16,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   initialTab = 'login',
   onSuccess
 }) => {
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail, user } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const { t } = useLanguage();
 
   const [modalTab, setModalTab] = useState<'signup' | 'login'>(initialTab);
@@ -113,10 +113,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div style={{ textAlign: 'center', padding: '30px 10px' }}>
               <CheckCircle2 color="#4edea3" size={54} style={{ margin: '0 auto 16px auto' }} />
               <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
-                {modalTab === 'signup' ? '회원가입 완료!' : '로그인 성공!'}
+                {modalTab === 'signup' ? t('auth.signup_success', '회원가입 완료!') : t('auth.login_success', '로그인 성공!')}
               </h4>
               <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '8px' }}>
-                포털의 모든 스킬과 서비스를 이용하실 수 있습니다.
+                {t('auth.success_sub', '포털의 모든 스킬과 서비스를 이용하실 수 있습니다.')}
               </p>
             </div>
           ) : (
@@ -177,13 +177,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                {modalTab === 'signup' ? 'Google 계정으로 1초 만에 회원가입' : 'Google 계정으로 1초 만에 로그인'}
+                {modalTab === 'signup' ? t('auth.btn_google_signup', 'Google 계정으로 1초 만에 회원가입') : t('auth.btn_google_login', 'Google 계정으로 1초 만에 로그인')}
               </button>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '18px 0 16px 0' }}>
                 <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
                 <span style={{ fontSize: '0.72rem', color: '#bcc9cd', textTransform: 'uppercase' }}>
-                  {modalTab === 'signup' ? '또는 이메일 회원가입' : '또는 이메일 로그인'}
+                  {modalTab === 'signup' ? t('auth.or_email_signup', '또는 이메일 회원가입') : t('auth.or_email_login', '또는 이메일 로그인')}
                 </span>
                 <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
               </div>
@@ -193,7 +193,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 {modalTab === 'signup' && (
                   <div>
                     <label style={{ display: 'block', fontSize: '0.78rem', color: '#bcc9cd', marginBottom: '6px', fontWeight: 700 }}>
-                      이름 (Name / Organization)
+                      {t('auth.label_name', '이름 (Name / Organization)')}
                     </label>
                     <div style={{ position: 'relative' }}>
                       <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#4cd7f6' }} />
@@ -202,7 +202,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="홍길동 또는 연구소명"
+                        placeholder={t('auth.placeholder_name', '홍길동 또는 연구소명')}
                         style={{ width: '100%', padding: '11px 12px 11px 36px', borderRadius: '10px', background: 'rgba(23, 31, 51, 0.9)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '0.85rem' }}
                       />
                     </div>
@@ -211,7 +211,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', color: '#bcc9cd', marginBottom: '6px', fontWeight: 700 }}>
-                    이메일 주소 (Email Address)
+                    {t('auth.label_email', '이메일 주소 (Email Address)')}
                   </label>
                   <div style={{ position: 'relative' }}>
                     <Mail size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#4cd7f6' }} />
@@ -220,7 +220,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="researcher@bio-lab.com"
+                      placeholder={t('auth.placeholder_email', 'researcher@bio-lab.com')}
                       style={{ width: '100%', padding: '11px 12px 11px 36px', borderRadius: '10px', background: 'rgba(23, 31, 51, 0.9)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '0.85rem' }}
                     />
                   </div>
@@ -228,7 +228,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', color: '#bcc9cd', marginBottom: '6px', fontWeight: 700 }}>
-                    비밀번호 (Password)
+                    {t('auth.label_password', '비밀번호 (Password)')}
                   </label>
                   <div style={{ position: 'relative' }}>
                     <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#4cd7f6' }} />
@@ -237,7 +237,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
+                      placeholder={t('auth.placeholder_password', '••••••••')}
                       style={{ width: '100%', padding: '11px 12px 11px 36px', borderRadius: '10px', background: 'rgba(23, 31, 51, 0.9)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '0.85rem' }}
                     />
                   </div>
@@ -252,7 +252,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     cursor: isProcessing ? 'wait' : 'pointer', boxShadow: '0 4px 15px rgba(76, 215, 246, 0.3)'
                   }}
                 >
-                  {isProcessing ? '인증 처리 중...' : modalTab === 'signup' ? '무료 계정 생성 및 시작하기' : '로그인 완료하기'}
+                  {isProcessing ? t('auth.btn_processing', '인증 처리 중...') : modalTab === 'signup' ? t('auth.btn_signup_submit', '무료 계정 생성 및 시작하기') : t('auth.btn_login_submit', '로그인 완료하기')}
                 </button>
               </form>
             </>

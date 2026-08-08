@@ -412,10 +412,14 @@ const AppInner: React.FC = () => {
               <button onClick={() => handleOpenPrivacyTerms('privacy')} style={{ background: 'none', border: 'none', color: '#4cd7f6', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline' }}>{t('footer.privacy', '개인정보 처리방침')}</button>
               <span>|</span>
               <button onClick={() => handleOpenPrivacyTerms('terms')} style={{ background: 'none', border: 'none', color: '#bcc9cd', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline' }}>{t('footer.terms', '이용약관')}</button>
-              <span>|</span>
-              <button onClick={() => setIsSuperAdminOpen(true)} style={{ background: 'none', border: 'none', color: '#fca5a5', cursor: 'pointer', fontWeight: 700, textDecoration: 'none', textDecorationLine: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <ShieldCheck size={14} /> {t('nav.admin_btn', '🛡️ 마스터 콘솔 (Master Console)')}
-              </button>
+              {language === 'ko' && (
+                <>
+                  <span>|</span>
+                  <button onClick={() => setIsSuperAdminOpen(true)} style={{ background: 'none', border: 'none', color: '#fca5a5', cursor: 'pointer', fontWeight: 700, textDecoration: 'none', textDecorationLine: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <ShieldCheck size={14} /> {t('nav.admin_btn', '🛡️ 마스터 콘솔 (Master Console)')}
+                  </button>
+                </>
+              )}
             </div>
             {t('footer.rights', 'All Rights Reserved. Aetheria Bio Portal.')} | Powered By <span style={{ color: '#4cd7f6', fontWeight: 900 }}>Linked Ai Oz</span>
           </footer>

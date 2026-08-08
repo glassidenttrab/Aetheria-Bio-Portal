@@ -76,26 +76,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     try {
       const loggedUser = await signInWithGoogle();
 
-      const userData = loggedUser || {
-        id: 'usr_google_' + Date.now(),
-        name: 'Google 계정 연구원 (Dr. Seung-Woo Kim)',
-        email: 'google.researcher@aetheria-bio.com',
-        plan: 'pro' as const,
-        institution: 'Aetheria Bio Partner Institute',
-        title: '책임연구원 / Chief Scientist',
-        queriesRemaining: 3
-      };
-
-      if (onLoginSuccess) {
-        onLoginSuccess(userData);
-      }
-
-      setIsSuccess(true);
-      setTimeout(() => {
-        setIsSuccess(false);
+      // If user profile returned synchronously (popup/demo)
+      if (loggedUser) {
+        if (onLoginSuccess) {
+          onLoginSuccess(loggedUser);
+        }
+        setIsSuccess(true);
+        setTimeout(() => {
+          setIsSuccess(false);
+          onClose();
+          if (onSuccess) onSuccess();
+        }, 1200);
+      } else {
+        // Redirecting to Google OAuth Provider page
         onClose();
-        if (onSuccess) onSuccess();
-      }, 1200);
+      }
     } catch (err: any) {
       setAuthError(t('auth.google_error', 'Google 인증 실패: ') + (err.message || t('auth.try_again', '다시 시도해 주세요.')));
     } finally {

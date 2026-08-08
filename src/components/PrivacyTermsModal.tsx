@@ -16,6 +16,12 @@ export const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'privacy' | 'terms'>(initialTab);
 
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, isOpen]);
+
   if (!isOpen) return null;
 
   return (

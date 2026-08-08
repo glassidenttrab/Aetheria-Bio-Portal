@@ -131,11 +131,10 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
           <KeyRound size={38} />
         </div>
         <h2 style={{ fontSize: '1.65rem', fontWeight: 900, color: '#fff', margin: '0 0 12px 0' }}>
-          로그인이 필요한 영역입니다
+          {t('mypage.guest_title', '로그인이 필요한 영역입니다')}
         </h2>
         <p style={{ fontSize: '0.92rem', color: '#94a3b8', lineHeight: 1.6, marginBottom: '32px' }}>
-          <strong>[마이페이지 & 관심 보관함]</strong>은 개인화된 연구 데이터, 타깃 보관함, API Key 및 구독 관리 영역입니다.<br />
-          Aetheria Bio Portal 무료 계정을 생성하거나 로그인하여 전신 10대 의학과 38개 사이언스 스킬 혜택을 이용해 보세요.
+          {t('mypage.guest_desc', '[마이페이지 & 관심 보관함]은 개인화된 연구 데이터, 타깃 보관함, API Key 및 구독 관리 영역입니다. Aetheria Bio Portal 무료 계정을 생성하거나 로그인하여 전신 10대 의학과 38개 사이언스 스킬 혜택을 이용해 보세요.')}
         </p>
 
         <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -149,7 +148,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
               boxShadow: '0 6px 20px rgba(76, 215, 246, 0.4)', display: 'inline-flex', alignItems: 'center', gap: '8px'
             }}
           >
-            <KeyRound size={18} /> 로그인 & 무료 회원가입 3초 만에 시작
+            <KeyRound size={18} /> {t('mypage.guest_cta', '로그인 & 무료 회원가입 3초 만에 시작')}
           </button>
         </div>
       </div>

@@ -86,32 +86,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const signInWithGoogle = async () => {
-    // 1. Try Supabase Auth OAuth with Google
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin
-        }
-      });
-      if (!error && data?.url) {
-        window.location.href = data.url;
-        return;
-      }
-    } catch (supabaseErr) {
-      console.log('Supabase OAuth notice: Proceeding with Google Provider fallback', supabaseErr);
-    }
-
-    // 2. Firebase / Google Identity Services Fallback
+    // 1. Firebase Direct Google OAuth Popup (Displays clean Aetheria Bio app branding without Supabase subdomains)
     try {
       const provider = new GoogleAuthProvider();
-      const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-      if (googleClientId) {
-        provider.setCustomParameters({
-          client_id: googleClientId,
-          prompt: 'select_account'
-        });
-      }
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
       const res = await signInWithPopup(auth, provider);
       if (res.user) {
         const loggedUser = {
@@ -124,7 +104,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return loggedUser;
       }
     } catch (err: any) {
-      console.log('Firebase popup notice: Falling back to Google OAuth User Profile', err);
+      console.log('Direct Google Auth notice: Proceeding with Supabase Fallback', err);
+    }
+
+    // 2. Try Supabase Auth OAuth with Google
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (!error && data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+    } catch (supabaseErr) {
+      console.log('Supabase OAuth notice:', supabaseErr);
     }
 
     // 3. Fallback for Demo & Development Environments

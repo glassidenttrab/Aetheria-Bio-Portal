@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SaaSPlatformView } from './components/SaaSPlatformView';
 import { AuthCheckoutModal } from './components/AuthCheckoutModal';
+import { AuthModal } from './components/AuthModal';
 import { PrivacyTermsModal } from './components/PrivacyTermsModal';
 import { PlanPricingDetailsModal } from './components/PlanPricingDetailsModal';
 import { MyResearchPortalView } from './components/MyResearchPortalView';
@@ -39,6 +40,8 @@ const AppInner: React.FC = () => {
   const [isPlanDetailsOpen, setIsPlanDetailsOpen] = useState(false);
   const [isSuperAdminOpen, setIsSuperAdminOpen] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('login');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [user, setUser] = useState<UserProfile>({
     id: 'guest',
@@ -349,10 +352,20 @@ const AppInner: React.FC = () => {
             </button>
 
             <button
-              onClick={() => handleOpenCheckout('pro')}
-              style={{ padding: '7px 14px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #4cd7f6 0%, #1bbd85 100%)', color: '#000', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', flexShrink: 0 }}
+              onClick={() => {
+                setAuthModalTab('login');
+                setIsAuthModalOpen(true);
+              }}
+              style={{ padding: '7px 13px', borderRadius: '10px', border: '1px solid rgba(76, 215, 246, 0.5)', background: 'rgba(23, 31, 51, 0.9)', color: '#4cd7f6', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', flexShrink: 0 }}
             >
-              <Zap size={15} /> <span className="header-btn-text" style={{ whiteSpace: 'nowrap' }}>{t('auth.checkout_title', '결제 및 요금제 연동')}</span>
+              <KeyRound size={15} /> <span className="header-btn-text" style={{ whiteSpace: 'nowrap' }}>{t('auth.tab_login', '로그인 & 회원가입')}</span>
+            </button>
+
+            <button
+              onClick={() => handleOpenCheckout('pro')}
+              style={{ padding: '7px 14px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #ffd700 0%, #ffaa00 100%)', color: '#000', fontWeight: 900, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', flexShrink: 0, boxShadow: '0 4px 12px rgba(255, 215, 0, 0.25)' }}
+            >
+              <Crown size={15} /> <span className="header-btn-text" style={{ whiteSpace: 'nowrap' }}>{t('auth.checkout_title', '구독 결제')}</span>
             </button>
 
             <button
@@ -430,6 +443,12 @@ const AppInner: React.FC = () => {
       <ContactSupportModal
         isOpen={isSupportOpen}
         onClose={() => setIsSupportOpen(false)}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialTab={authModalTab}
       />
     </div>
   );

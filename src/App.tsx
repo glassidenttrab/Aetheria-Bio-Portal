@@ -461,6 +461,7 @@ const AppInner: React.FC = () => {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         initialTab={authModalTab}
+        onLoginSuccess={(userData) => handleUpdateUser(userData)}
       />
     </div>
   );

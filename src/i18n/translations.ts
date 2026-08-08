@@ -293,6 +293,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.error_generic': '인증 처리에 실패했습니다. 입력 정보를 확인해 주세요.',
     'auth.google_error': 'Google 인증 실패: ',
     'auth.try_again': '다시 시도해 주세요.',
+    'auth.google_select_title': 'Google 계정 선택',
+    'auth.google_select_subtitle': 'Aetheria Bio Portal로 계속 진행할 구글 계정을 선택해 주세요.',
+    'auth.google_account_other': '다른 Google 계정 사용',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -575,6 +578,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.error_generic': 'Authentication failed. Please check your inputs.',
     'auth.google_error': 'Google Authentication Failed: ',
     'auth.try_again': 'Please try again.',
+    'auth.google_select_title': 'Choose a Google Account',
+    'auth.google_select_subtitle': 'Select an account to continue to Aetheria Bio Portal.',
+    'auth.google_account_other': 'Use another Google account',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -835,6 +841,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.error_generic': '認証処理に失敗しました。入力内容をご確認ください。',
     'auth.google_error': 'Google認証失敗: ',
     'auth.try_again': 'もう一度お試しください。',
+    'auth.google_select_title': 'Google アカウントの選択',
+    'auth.google_select_subtitle': 'Aetheria Bio Portal へ継続するアカウントを選択してください。',
+    'auth.google_account_other': '別のアカウントを使用',
 
     'pmodal.free_f1': '基本タンパク質3D分子ビューア体験 (3Dmol)',
     'pmodal.free_f2': '全身10大医学科基本スキャン (1日3回上限)',
@@ -1372,6 +1381,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.error_generic': '身份验证失败，请检查输入的信息。',
     'auth.google_error': 'Google 验证失败：',
     'auth.try_again': '请重试。',
+    'auth.google_select_title': '选择 Google 账号',
+    'auth.google_select_subtitle': '选择要继续前往 Aetheria Bio Portal 的账号。',
+    'auth.google_account_other': '使用其他 Google 账号',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -1756,6 +1768,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.error_generic': 'Error de autenticación. Por favor, comprueba tus datos.',
     'auth.google_error': 'Error de autenticación con Google: ',
     'auth.try_again': 'Por favor, inténtalo de nuevo.',
+    'auth.google_select_title': 'Elige una cuenta de Google',
+    'auth.google_select_subtitle': 'Selecciona una cuenta para continuar en Aetheria Bio Portal.',
+    'auth.google_account_other': 'Usar otra cuenta de Google',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -2140,6 +2155,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.error_generic': 'Authentifizierung fehlgeschlagen. Bitte überprüfen Sie Ihre Eingaben.',
     'auth.google_error': 'Google-Authentifizierung fehlgeschlagen: ',
     'auth.try_again': 'Bitte versuchen Sie es erneut.',
+    'auth.google_select_title': 'Google-Konto auswählen',
+    'auth.google_select_subtitle': 'Wählen Sie ein Konto aus, um zu Aetheria Bio Portal fortzufahren.',
+    'auth.google_account_other': 'Ein anderes Google-Konto verwenden',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -2524,6 +2542,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.error_generic': 'Autenticazione fallita. Si prega di verificare i dati inseriti.',
     'auth.google_error': 'Autenticazione Google fallita: ',
     'auth.try_again': 'Riprova.',
+    'auth.google_select_title': 'Scegli un account Google',
+    'auth.google_select_subtitle': 'Seleziona un account per continuare su Aetheria Bio Portal.',
+    'auth.google_account_other': 'Utilizza un altro account Google',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -2908,6 +2929,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.error_generic': 'Échec de l\'authentification. Veuillez vérifier vos informations.',
     'auth.google_error': 'Échec de l\'authentification Google : ',
     'auth.try_again': 'Veuillez réessayer.',
+    'auth.google_select_title': 'Choisir un compte Google',
+    'auth.google_select_subtitle': 'Sélectionnez un compte pour continuer sur Aetheria Bio Portal.',
+    'auth.google_account_other': 'Utiliser un autre compte Google',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',

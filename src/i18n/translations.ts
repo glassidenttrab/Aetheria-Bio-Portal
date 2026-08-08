@@ -296,6 +296,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.google_select_title': 'Google 계정 선택',
     'auth.google_select_subtitle': 'Aetheria Bio Portal로 계속 진행할 구글 계정을 선택해 주세요.',
     'auth.google_account_other': '다른 Google 계정 사용',
+    'auth.btn_back_prev': '이전 단계로 돌아가기',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -581,6 +582,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.google_select_title': 'Choose a Google Account',
     'auth.google_select_subtitle': 'Select an account to continue to Aetheria Bio Portal.',
     'auth.google_account_other': 'Use another Google account',
+    'auth.btn_back_prev': 'Back to previous step',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -844,6 +846,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.google_select_title': 'Google アカウントの選択',
     'auth.google_select_subtitle': 'Aetheria Bio Portal へ継続するアカウントを選択してください。',
     'auth.google_account_other': '別のアカウントを使用',
+    'auth.btn_back_prev': '前のステップに戻る',
 
     'pmodal.free_f1': '基本タンパク質3D分子ビューア体験 (3Dmol)',
     'pmodal.free_f2': '全身10大医学科基本スキャン (1日3回上限)',
@@ -1384,6 +1387,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.google_select_title': '选择 Google 账号',
     'auth.google_select_subtitle': '选择要继续前往 Aetheria Bio Portal 的账号。',
     'auth.google_account_other': '使用其他 Google 账号',
+    'auth.btn_back_prev': '返回上一步',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -1771,6 +1775,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.google_select_title': 'Elige una cuenta de Google',
     'auth.google_select_subtitle': 'Selecciona una cuenta para continuar en Aetheria Bio Portal.',
     'auth.google_account_other': 'Usar otra cuenta de Google',
+    'auth.btn_back_prev': 'Volver al paso anterior',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -2158,6 +2163,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.google_select_title': 'Google-Konto auswählen',
     'auth.google_select_subtitle': 'Wählen Sie ein Konto aus, um zu Aetheria Bio Portal fortzufahren.',
     'auth.google_account_other': 'Ein anderes Google-Konto verwenden',
+    'auth.btn_back_prev': 'Zurück zum vorherigen Schritt',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -2545,6 +2551,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.google_select_title': 'Scegli un account Google',
     'auth.google_select_subtitle': 'Seleziona un account per continuare su Aetheria Bio Portal.',
     'auth.google_account_other': 'Utilizza un altro account Google',
+    'auth.btn_back_prev': 'Torna al passaggio precedente',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',
@@ -2932,6 +2939,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.google_select_title': 'Choisir un compte Google',
     'auth.google_select_subtitle': 'Sélectionnez un compte pour continuer sur Aetheria Bio Portal.',
     'auth.google_account_other': 'Utiliser un autre compte Google',
+    'auth.btn_back_prev': 'Retour à l\'étape précédente',
 
     // Pricing Plans
     'plan.free_title': 'Free Starter Tier',

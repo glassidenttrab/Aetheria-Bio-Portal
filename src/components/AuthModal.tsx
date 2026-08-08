@@ -223,7 +223,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', margin: '0 auto'
                 }}
               >
-                <ArrowLeft size={16} /> 이전 단계로 돌아가기
+                <ArrowLeft size={16} /> {t('auth.btn_back_prev', '이전 단계로 돌아가기')}
               </button>
             </div>
           ) : isSuccess ? (

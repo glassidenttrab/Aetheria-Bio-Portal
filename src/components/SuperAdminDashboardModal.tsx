@@ -202,7 +202,7 @@ export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> =
               {t('admin.login_title', 'Aetheria Bio Portal - 최고 관리자 인증')}
             </h2>
             <p style={{ margin: '6px 0 0 0', fontSize: '0.84rem', color: '#94a3b8' }}>
-              {t('admin.login_subtitle', '통합 관제 콘솔에 접근하려면 최고 관리자 계정으로 로그인하세요.')}
+              {t('admin.login_subtitle', '마스터 콘솔에 접근하려면 최고 관리자 계정으로 로그인하세요.')}
             </p>
           </div>
 
@@ -289,7 +289,7 @@ export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> =
                 transition: 'all 0.2s ease',
               }}
             >
-              🔓 {t('admin.btn_login', '어드민 인증 및 관제 접속')}
+              🔓 {t('admin.btn_login', '어드민 인증 및 마스터 콘솔 접속')}
             </button>
           </form>
 
@@ -387,7 +387,7 @@ export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> =
                     letterSpacing: '-0.01em',
                   }}
                 >
-                  {t('admin.modal_title', 'Aetheria Bio Portal - 최고 관리자 통합 관제 대시보드')}
+                  {t('admin.modal_title', 'Aetheria Bio Portal - 마스터 콘솔 (Master Console)')}
                 </h2>
                 <span className="badge badge-cyan" style={{ fontSize: '0.75rem', fontWeight: 800 }}>
                   LIVE DB OK

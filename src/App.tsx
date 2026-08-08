@@ -393,7 +393,7 @@ const AppInner: React.FC = () => {
               <button onClick={() => handleOpenPrivacyTerms('terms')} style={{ background: 'none', border: 'none', color: '#bcc9cd', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline' }}>{t('footer.terms', '이용약관')}</button>
               <span>|</span>
               <button onClick={() => setIsSuperAdminOpen(true)} style={{ background: 'none', border: 'none', color: '#fca5a5', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <ShieldCheck size={14} /> {t('nav.admin_btn', '🛡️ 최고 관리자 관제 (Super Admin)')}
+                <ShieldCheck size={14} /> {t('nav.admin_btn', '🛡️ 마스터 콘솔 (Master Console)')}
               </button>
             </div>
             {t('footer.rights', 'All Rights Reserved. Aetheria Bio Portal.')} | Powered By <span style={{ color: '#4cd7f6', fontWeight: 900 }}>Linked Ai Oz</span>

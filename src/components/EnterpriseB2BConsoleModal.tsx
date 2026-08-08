@@ -138,7 +138,7 @@ export const EnterpriseB2BConsoleModal: React.FC<EnterpriseB2BConsoleModalProps>
               <Building2 size={13} /> Enterprise B2B Custom Integration Console
             </div>
             <h2 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#ffffff', margin: 0 }}>
-              Enterprise B2B 기업 전용 관제 & 개발자 API 콘솔
+              Enterprise B2B 기업 전용 마스터 콘솔 & 개발자 API
             </h2>
             <p style={{ fontSize: '0.8rem', color: '#bcc9cd', margin: '2px 0 0 0' }}>
               글로벌 제약사 및 B2B 생명공학 기업을 위한 온보딩 신청, REST/GraphQL SDK 개발자 매뉴얼 및 FTO/SenoScan™ 심층 감사 센터

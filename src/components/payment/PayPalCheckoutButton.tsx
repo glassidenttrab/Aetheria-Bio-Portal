@@ -17,6 +17,21 @@ export const PayPalCheckoutButton: React.FC<PayPalCheckoutButtonProps> = ({
 }) => {
   return (
     <div style={{ width: '100%' }}>
+      <div style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        fontSize: '0.72rem',
+        fontWeight: 700,
+        color: '#ffc107',
+        background: 'rgba(255, 193, 7, 0.12)',
+        border: '1px solid rgba(255, 193, 7, 0.3)',
+        padding: '3px 8px',
+        borderRadius: '6px',
+        marginBottom: '10px'
+      }}>
+        <span>🧪</span> Sandbox Test Environment Active (가상 테스트 결제)
+      </div>
       <PayPalButtons
         style={{
           layout: 'vertical',

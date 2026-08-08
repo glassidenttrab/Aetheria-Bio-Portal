@@ -187,6 +187,29 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       document.head.appendChild(canonicalLink);
     }
     canonicalLink.setAttribute('href', `https://www.aetheria.bio/?lang=${language}`);
+
+    // 7. Google 표준 다국어 Hreflang 링크 동적 생성 및 갱신
+    SUPPORTED_LANGUAGES.forEach(langOpt => {
+      const hrefLangCode = langOpt.code === 'zh' ? 'zh-CN' : langOpt.code;
+      let hreflangLink = document.querySelector(`link[rel="alternate"][hreflang="${hrefLangCode}"]`);
+      if (!hreflangLink) {
+        hreflangLink = document.createElement('link');
+        hreflangLink.setAttribute('rel', 'alternate');
+        hreflangLink.setAttribute('hreflang', hrefLangCode);
+        document.head.appendChild(hreflangLink);
+      }
+      hreflangLink.setAttribute('href', `https://www.aetheria.bio/?lang=${langOpt.code}`);
+    });
+
+    // x-default hreflang (기본값 링크)
+    let xDefaultLink = document.querySelector('link[rel="alternate"][hreflang="x-default"]');
+    if (!xDefaultLink) {
+      xDefaultLink = document.createElement('link');
+      xDefaultLink.setAttribute('rel', 'alternate');
+      xDefaultLink.setAttribute('hreflang', 'x-default');
+      document.head.appendChild(xDefaultLink);
+    }
+    xDefaultLink.setAttribute('href', 'https://www.aetheria.bio/');
   }, [language]);
 
   const currentLanguageObj = SUPPORTED_LANGUAGES.find(l => l.code === language) || SUPPORTED_LANGUAGES[0];

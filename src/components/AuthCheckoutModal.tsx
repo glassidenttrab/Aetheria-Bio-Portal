@@ -343,6 +343,28 @@ export const AuthCheckoutModal: React.FC<AuthCheckoutModalProps> = ({
           {/* 3. PayPal 및 카드 결제 단계 */}
           {modalTab === 'checkout' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* 🧪 Sandbox 테스트 모드 안내 배너 */}
+              <div style={{
+                padding: '12px 16px',
+                background: 'rgba(255, 171, 0, 0.12)',
+                border: '1px solid rgba(255, 171, 0, 0.4)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                boxShadow: '0 0 15px rgba(255, 171, 0, 0.1)'
+              }}>
+                <span style={{ fontSize: '1.4rem' }}>🧪</span>
+                <div>
+                  <div style={{ fontWeight: 800, color: '#ffb300', fontSize: '0.85rem', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    [PayPal Sandbox 테스트 결제 진행 중]
+                  </div>
+                  <div style={{ color: '#ffe082', fontSize: '0.78rem', lineHeight: '1.4' }}>
+                    현재 서비스는 정식 오픈 전 <strong>샌드박스 테스트 모드</strong>로 구동 중입니다. 실제 금액은 청구되지 않으며 가상 테스트 계정으로 안전하게 결제 파이프라인을 체험하실 수 있습니다.
+                  </div>
+                </div>
+              </div>
+
               <div style={{ padding: '14px 18px', background: 'rgba(11, 19, 38, 0.7)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '0.8rem', color: '#bcc9cd' }}>구독 인증 완료 계정</div>

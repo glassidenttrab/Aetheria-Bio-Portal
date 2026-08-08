@@ -433,7 +433,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
 
             {user.plan === 'enterprise' && (
               <div style={{ padding: '24px', borderRadius: '18px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(255, 215, 0, 0.35)' }}>
-                <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>Enterprise B2B 전용 관제 센터</div>
+                <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>Enterprise B2B 전용 콘솔 Center</div>
                 <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffd700', margin: '8px 0' }}>
                   API Key 발급 · 개발자 콘솔 · FTO 감사
                 </div>

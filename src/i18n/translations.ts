@@ -243,6 +243,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'overview.card_longevity_desc': 'SIRT1 항노화 & p16 노화세포 사멸 센서',
 
     // Modals & Auth
+    'auth.checkout_title': '구독 결제',
+    'nav.auth_login': '로그인 & 회원가입',
+    'auth.plan_summary': '구독 라이선스 상태',
+    'auth.checkout_title_full': 'Aetheria Bio 구독 결제 진행',
     'auth.signup_checkout_cta': '회원가입 & 결제',
     'checkout.title_suffix': '구독 결제',
     'checkout.subtitle': '안전한 결제 수단 선택 및 즉시 플랜 적용',
@@ -521,6 +525,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'overview.card_longevity_desc': 'SIRT1 Anti-Aging & p16 Senescent Cell Death Sensor',
 
     // Modals & Auth
+    'auth.checkout_title': 'Subscribe & Checkout',
+    'nav.auth_login': 'Sign In & Sign Up',
+    'auth.plan_summary': 'Subscription License Status',
+    'auth.checkout_title_full': 'Aetheria Bio Subscription Checkout',
     'auth.signup_checkout_cta': 'Sign Up & Checkout',
     'checkout.title_suffix': 'Subscription Checkout',
     'checkout.subtitle': 'Select a secure payment method and apply your plan instantly',
@@ -774,6 +782,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'pmodal.free_desc': '基礎研究者およびポータル基本機能の試用向け無料プラン',
 
     // Modals & Auth
+    'auth.checkout_title': '購読決済',
+    'nav.auth_login': 'ログイン＆新規登録',
+    'auth.plan_summary': '購読ライセンスステータス',
+    'auth.checkout_title_full': 'Aetheria Bio 購読決済手続き',
     'auth.signup_checkout_cta': '会員登録 & 決済',
     'checkout.title_suffix': '購読決済',
     'checkout.subtitle': '安全な決済手段を選択して即座にプランを適用',
@@ -1304,6 +1316,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'overview.card_longevity_desc': 'SIRT1 长寿与 p16 衰老细胞凋亡传感器',
 
     // Modals & Auth
+    'auth.checkout_title': '订阅结算',
+    'nav.auth_login': '登录与注册',
+    'auth.plan_summary': '订阅授权状态',
+    'auth.checkout_title_full': 'Aetheria Bio 订阅结算办理',
     'auth.signup_checkout_cta': '注册 & 支付',
     'checkout.title_suffix': '订阅支付',
     'checkout.subtitle': '选择安全支付方式并立即生效方案',
@@ -1681,6 +1697,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'overview.card_longevity_desc': 'Sensor de Muerte Celular Senescente SIRT1 y p16',
 
     // Modals & Auth
+    'auth.checkout_title': 'Pagar Suscripción',
+    'nav.auth_login': 'Iniciar Sesión y Registrarse',
+    'auth.plan_summary': 'Estado de Licencia de Suscripción',
+    'auth.checkout_title_full': 'Pago de Suscripción Aetheria Bio',
     'auth.signup_checkout_cta': 'Registro y Pago',
     'checkout.title_suffix': 'Pago de Suscripción',
     'checkout.subtitle': 'Selecciona un método de pago seguro y aplica tu plan al instante',
@@ -2058,6 +2078,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'overview.card_longevity_desc': 'SIRT1 Anti-Aging & p16 Seneszente Zell-Todes-Sensoren',
 
     // Modals & Auth
+    'auth.checkout_title': 'Abonnement-Kasse',
+    'nav.auth_login': 'Anmelden & Registrieren',
+    'auth.plan_summary': 'Abonnement-Lizenzstatus',
+    'auth.checkout_title_full': 'Aetheria Bio Abonnement-Bestellung',
     'auth.signup_checkout_cta': 'Registrieren & Zahlung',
     'checkout.title_suffix': 'Abonnement-Kasse',
     'checkout.subtitle': 'Wählen Sie eine sichere Zahlungsmethode und aktivieren Sie Ihren Tarif sofort',
@@ -2435,6 +2459,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'overview.card_longevity_desc': 'Sensore Morte Cellule Senescenti SIRT1 e p16',
 
     // Modals & Auth
+    'auth.checkout_title': 'Pagamento Abbonamento',
+    'nav.auth_login': 'Accedi e Registrati',
+    'auth.plan_summary': 'Stato Licenza Abbonamento',
+    'auth.checkout_title_full': 'Pagamento Abbonamento Aetheria Bio',
     'auth.signup_checkout_cta': 'Registrati e Paga',
     'checkout.title_suffix': 'Pagamento Abbonamento',
     'checkout.subtitle': 'Seleziona un metodo di pagamento sicuro e applica il piano all\'istante',
@@ -2812,6 +2840,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'overview.card_longevity_desc': 'Détecteur de Mort Cellulaire Sénescente SIRT1 et p16',
 
     // Modals & Auth
+    'auth.checkout_title': 'Payer l\'Abonnement',
+    'nav.auth_login': 'Se Connecter et S\'inscrire',
+    'auth.plan_summary': 'Statut de Licence d\'Abonnement',
+    'auth.checkout_title_full': 'Paiement de l\'Abonnement Aetheria Bio',
     'auth.signup_checkout_cta': 'Inscription & Paiement',
     'checkout.title_suffix': 'Paiement d\'Abonnement',
     'checkout.subtitle': 'Sélectionnez un moyen de paiement sécurisé et appliquez votre forfait instantanément',

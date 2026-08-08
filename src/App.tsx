@@ -362,7 +362,7 @@ const AppInner: React.FC = () => {
               }}
               style={{ padding: '7px 13px', borderRadius: '10px', border: '1px solid rgba(76, 215, 246, 0.5)', background: 'rgba(23, 31, 51, 0.9)', color: '#4cd7f6', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', flexShrink: 0 }}
             >
-              <KeyRound size={15} /> <span className="header-btn-text" style={{ whiteSpace: 'nowrap' }}>{t('auth.tab_login', '로그인 & 회원가입')}</span>
+              <KeyRound size={15} /> <span className="header-btn-text" style={{ whiteSpace: 'nowrap' }}>{t('nav.auth_login', '로그인 & 회원가입')}</span>
             </button>
 
             <button

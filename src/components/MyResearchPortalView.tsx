@@ -12,15 +12,18 @@ interface MyResearchPortalViewProps {
   onUpdateUser: (updated: Partial<UserProfile>) => void;
   onNavigateCategory: (cat: SaasCategory) => void;
   onOpenCheckout: (tier: UserPlanTier) => void;
+  onOpenAuth?: () => void;
 }
 
 export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
   user,
   onUpdateUser,
   onNavigateCategory,
-  onOpenCheckout
+  onOpenCheckout,
+  onOpenAuth
 }) => {
   const { t } = useLanguage();
+  const isLoggedIn = user && user.id !== 'guest';
   const [activeTab, setActiveTab] = useState<'profile' | 'vault' | 'history' | 'billing'>('profile');
   const [isB2BConsoleOpen, setIsB2BConsoleOpen] = useState(false);
   const [dbAuditLogs, setDbAuditLogs] = useState<SkillAuditLogItem[]>([]);
@@ -111,6 +114,47 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
       localStorage.setItem('aetheria_target_vault', JSON.stringify(keys));
     } catch (e) { console.error(e); }
   };
+
+  if (!isLoggedIn) {
+    return (
+      <div style={{
+        maxWidth: '680px', margin: '40px auto', padding: '48px 36px',
+        background: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(76, 215, 246, 0.4)',
+        borderRadius: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.7), 0 0 30px rgba(76, 215, 246, 0.2)',
+        textAlign: 'center', color: '#dae2fd'
+      }}>
+        <div style={{
+          width: '76px', height: '76px', borderRadius: '22px', background: 'rgba(76, 215, 246, 0.15)',
+          border: '1px solid rgba(76, 215, 246, 0.4)', color: '#4cd7f6', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto'
+        }}>
+          <KeyRound size={38} />
+        </div>
+        <h2 style={{ fontSize: '1.65rem', fontWeight: 900, color: '#fff', margin: '0 0 12px 0' }}>
+          로그인이 필요한 영역입니다
+        </h2>
+        <p style={{ fontSize: '0.92rem', color: '#94a3b8', lineHeight: 1.6, marginBottom: '32px' }}>
+          <strong>[마이페이지 & 관심 보관함]</strong>은 개인화된 연구 데이터, 타깃 보관함, API Key 및 구독 관리 영역입니다.<br />
+          Aetheria Bio Portal 무료 계정을 생성하거나 로그인하여 전신 10대 의학과 38개 사이언스 스킬 혜택을 이용해 보세요.
+        </p>
+
+        <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            style={{
+              padding: '14px 32px', borderRadius: '14px', border: 'none',
+              background: 'linear-gradient(135deg, #4cd7f6 0%, #4facfe 100%)', color: '#000',
+              fontWeight: 900, fontSize: '0.98rem', cursor: 'pointer',
+              boxShadow: '0 6px 20px rgba(76, 215, 246, 0.4)', display: 'inline-flex', alignItems: 'center', gap: '8px'
+            }}
+          >
+            <KeyRound size={18} /> 로그인 & 무료 회원가입 3초 만에 시작
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>

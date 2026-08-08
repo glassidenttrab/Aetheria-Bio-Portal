@@ -140,6 +140,10 @@ const AppInner: React.FC = () => {
   const selectCategoryMobile = (cat: SaasCategory) => {
     setActiveCategory(cat);
     setIsMobileSidebarOpen(false);
+    if (cat === 'my_page' && user.id === 'guest') {
+      setAuthModalTab('login');
+      setIsAuthModalOpen(true);
+    }
   };
 
   return (
@@ -384,6 +388,10 @@ const AppInner: React.FC = () => {
               onUpdateUser={handleUpdateUser}
               onNavigateCategory={setActiveCategory}
               onOpenCheckout={handleOpenCheckout}
+              onOpenAuth={() => {
+                setAuthModalTab('login');
+                setIsAuthModalOpen(true);
+              }}
             />
           ) : (
             <SaaSPlatformView

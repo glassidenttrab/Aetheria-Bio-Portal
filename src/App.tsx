@@ -79,6 +79,26 @@ const AppInner: React.FC = () => {
     syncDbUser();
   }, [authUser]);
 
+  // 2. URL 딥링크 감지 (개인정보 처리방침 / 이용약관 / 결제 / 로그인 자동 모달 팝업)
+  useEffect(() => {
+    const pathname = window.location.pathname.toLowerCase();
+    const searchParams = new URLSearchParams(window.location.search);
+    const modalParam = (searchParams.get('modal') || searchParams.get('view') || '').toLowerCase();
+
+    if (pathname.includes('/privacy') || modalParam === 'privacy') {
+      setPrivacyTermsInitialTab('privacy');
+      setIsPrivacyTermsOpen(true);
+    } else if (pathname.includes('/terms') || modalParam === 'terms') {
+      setPrivacyTermsInitialTab('terms');
+      setIsPrivacyTermsOpen(true);
+    } else if (pathname.includes('/checkout') || modalParam === 'checkout' || modalParam === 'subscribe') {
+      handleOpenCheckout('pro');
+    } else if (pathname.includes('/login') || pathname.includes('/auth') || modalParam === 'login' || modalParam === 'auth') {
+      setAuthModalTab('login');
+      setIsAuthModalOpen(true);
+    }
+  }, []);
+
   const handleUpdateUser = (updated: Partial<UserProfile>) => {
     setUser(prev => {
       const nextUser = { ...prev, ...updated };

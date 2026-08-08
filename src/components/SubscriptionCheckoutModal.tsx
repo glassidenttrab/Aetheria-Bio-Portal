@@ -102,10 +102,10 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
             )}
             <div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: '#fff' }}>
-                {currentPriceInfo.name} 구독 결제
+                {currentPriceInfo.name} {t('checkout.title_suffix', '구독 결제')}
               </h3>
               <p style={{ fontSize: '0.78rem', color: '#bcc9cd', margin: '2px 0 0 0' }}>
-                안전한 결제 수단 선택 및 즉시 플랜 적용
+                {t('checkout.subtitle', '안전한 결제 수단 선택 및 즉시 플랜 적용')}
               </p>
             </div>
           </div>
@@ -126,23 +126,23 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
             <div style={{ textAlign: 'center', padding: '10px 0' }}>
               <CheckCircle2 color="#4edea3" size={54} style={{ margin: '0 auto 16px auto' }} />
               <h4 style={{ fontSize: '1.3rem', fontWeight: 900, color: '#fff', margin: 0 }}>
-                구독 결제가 완료되었습니다! 🎉
+                {t('checkout.success_title', '구독 결제가 완료되었습니다! 🎉')}
               </h4>
               <p style={{ fontSize: '0.85rem', color: '#bcc9cd', margin: '8px 0 20px 0' }}>
-                {currentPriceInfo.name} 혜택이 계정에 즉시 활성화되었습니다.
+                {t('checkout.success_desc', '선택하신 혜택이 계정에 즉시 활성화되었습니다.')}
               </p>
 
               <div style={{ background: 'rgba(23, 31, 51, 0.8)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'left', fontSize: '0.82rem', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <span style={{ color: '#bcc9cd' }}>거래 번호:</span>
+                  <span style={{ color: '#bcc9cd' }}>{t('checkout.tx_id', '거래 번호:')}</span>
                   <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#4cd7f6' }}>{receipt.transactionId}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <span style={{ color: '#bcc9cd' }}>결제 금액:</span>
-                  <span style={{ fontWeight: 800, color: '#ffd700' }}>${receipt.amountUSD} / 월</span>
+                  <span style={{ color: '#bcc9cd' }}>{t('checkout.amount', '결제 금액:')}</span>
+                  <span style={{ fontWeight: 800, color: '#ffd700' }}>${receipt.amountUSD} {t('plan.per_month', '/월')}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#bcc9cd' }}>결제 일시:</span>
+                  <span style={{ color: '#bcc9cd' }}>{t('checkout.date', '결제 일시:')}</span>
                   <span>{receipt.timestamp}</span>
                 </div>
               </div>
@@ -155,7 +155,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                   background: '#4cd7f6', color: '#000', fontWeight: 900, fontSize: '0.9rem', cursor: 'pointer'
                 }}
               >
-                서비스 이용하러 가기 →
+                {t('checkout.btn_use_service', '서비스 이용하러 가기 →')}
               </button>
             </div>
           ) : (
@@ -164,8 +164,8 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
               {!isLoggedIn && (
                 <div style={{ padding: '14px', background: 'rgba(255, 215, 0, 0.12)', border: '1px solid rgba(255, 215, 0, 0.4)', borderRadius: '12px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#ffd700' }}>로그인이 필요합니다</div>
-                    <div style={{ fontSize: '0.75rem', color: '#bcc9cd' }}>결제를 진행하기 위해 로그인해 주세요.</div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#ffd700' }}>{t('checkout.requires_login', '로그인이 필요합니다')}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#bcc9cd' }}>{t('checkout.requires_login_desc', '결제를 진행하기 위해 로그인해 주세요.')}</div>
                   </div>
                   {onRequireAuth && (
                     <button
@@ -173,7 +173,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                       onClick={onRequireAuth}
                       style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: '#ffd700', color: '#000', fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer' }}
                     >
-                      로그인하기
+                      {t('checkout.btn_login', '로그인하기')}
                     </button>
                   )}
                 </div>
@@ -188,7 +188,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#ffd700' }}>${currentPriceInfo.price}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#8899a6' }}>월간 자동결제</div>
+                    <div style={{ fontSize: '0.7rem', color: '#8899a6' }}>{t('checkout.monthly_auto', '월간 자동결제')}</div>
                   </div>
                 </div>
               </div>
@@ -196,7 +196,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
               {/* 결제 수단 선택 */}
               <div style={{ marginBottom: '20px' }}>
                 <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#bcc9cd', marginBottom: '10px' }}>
-                  결제 수단 선택 (Select Payment Method)
+                  {t('checkout.method_select', '결제 수단 선택 (Select Payment Method)')}
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button
@@ -210,7 +210,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
                     }}
                   >
-                    PayPal (글로벌 간편 결제)
+                    {t('checkout.paypal_label', 'PayPal (글로벌 간편 결제)')}
                   </button>
                   <button
                     type="button"
@@ -223,7 +223,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
                     }}
                   >
-                    <CreditCard size={16} /> 신용카드
+                    <CreditCard size={16} /> {t('checkout.card_label', '신용카드')}
                   </button>
                 </div>
               </div>
@@ -240,7 +240,9 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
               ) : (
                 <form onSubmit={handleCardPaymentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: '#bcc9cd', marginBottom: '4px', fontWeight: 700 }}>카드 번호</label>
+                    <label style={{ display: 'block', fontSize: '0.78rem', color: '#bcc9cd', marginBottom: '4px', fontWeight: 700 }}>
+                      {t('checkout.card_number', '카드 번호')}
+                    </label>
                     <input
                       type="text"
                       required
@@ -259,7 +261,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                       cursor: isProcessing ? 'wait' : 'pointer', boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)'
                     }}
                   >
-                    {isProcessing ? '결제 승인 중...' : `$${currentPriceInfo.price} 구독 승인 및 결제`}
+                    {isProcessing ? t('checkout.btn_processing', '결제 승인 중...') : `$${currentPriceInfo.price} ${t('checkout.btn_submit', '구독 승인 및 결제')}`}
                   </button>
                 </form>
               )}

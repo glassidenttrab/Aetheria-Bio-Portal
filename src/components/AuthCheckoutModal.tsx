@@ -9,6 +9,7 @@ interface AuthCheckoutModalProps {
   user: UserProfile;
   onPaymentSuccess: (newPlan: UserPlanTier, receipt: PaymentReceipt) => void;
   selectedTier: UserPlanTier;
+  isAnnual?: boolean;
 }
 
 export const AuthCheckoutModal: React.FC<AuthCheckoutModalProps> = ({
@@ -16,7 +17,8 @@ export const AuthCheckoutModal: React.FC<AuthCheckoutModalProps> = ({
   onClose,
   user,
   onPaymentSuccess,
-  selectedTier
+  selectedTier,
+  isAnnual = false
 }) => {
   const [authModalOpen, setAuthModalOpen] = React.useState(false);
 
@@ -48,6 +50,7 @@ export const AuthCheckoutModal: React.FC<AuthCheckoutModalProps> = ({
       onClose={onClose}
       user={user}
       selectedTier={selectedTier}
+      isAnnual={isAnnual}
       onPaymentSuccess={onPaymentSuccess}
       onRequireAuth={() => setAuthModalOpen(true)}
     />

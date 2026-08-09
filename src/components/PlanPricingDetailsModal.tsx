@@ -9,7 +9,7 @@ import {
 interface PlanPricingDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectPlan: (tier: UserPlanTier) => void;
+  onSelectPlan: (tier: UserPlanTier, isAnnual: boolean) => void;
   currentPlan?: UserPlanTier;
 }
 
@@ -211,7 +211,7 @@ export const PlanPricingDetailsModal: React.FC<PlanPricingDetailsModalProps> = (
 
                 <button
                   type="button"
-                  onClick={() => { onSelectPlan('free'); onClose(); }}
+                  onClick={() => { onSelectPlan('free', isAnnual); onClose(); }}
                   style={{
                     width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.2)',
                     background: 'rgba(255, 255, 255, 0.06)', color: '#fff', fontWeight: 800, fontSize: '0.85rem',
@@ -285,7 +285,7 @@ export const PlanPricingDetailsModal: React.FC<PlanPricingDetailsModalProps> = (
 
                 <button
                   type="button"
-                  onClick={() => { onSelectPlan('pro'); onClose(); }}
+                  onClick={() => { onSelectPlan('pro', isAnnual); onClose(); }}
                   style={{
                     width: '100%', padding: '11px', borderRadius: '10px', border: 'none',
                     background: 'linear-gradient(135deg, #4cd7f6 0%, #1bbd85 100%)', color: '#000', fontWeight: 900, fontSize: '0.9rem',
@@ -360,7 +360,7 @@ export const PlanPricingDetailsModal: React.FC<PlanPricingDetailsModalProps> = (
 
                 <button
                   type="button"
-                  onClick={() => { onSelectPlan('enterprise'); onClose(); }}
+                  onClick={() => { onSelectPlan('enterprise', isAnnual); onClose(); }}
                   style={{
                     width: '100%', padding: '11px', borderRadius: '10px', border: 'none',
                     background: 'linear-gradient(135deg, #ffd700 0%, #ffaa00 100%)', color: '#000', fontWeight: 900, fontSize: '0.9rem',
@@ -524,7 +524,7 @@ export const PlanPricingDetailsModal: React.FC<PlanPricingDetailsModalProps> = (
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               type="button"
-              onClick={() => { onSelectPlan('pro'); onClose(); }}
+              onClick={() => { onSelectPlan('pro', isAnnual); onClose(); }}
               style={{
                 padding: '9px 18px', borderRadius: '10px', border: 'none',
                 background: 'linear-gradient(135deg, #4cd7f6 0%, #1bbd85 100%)', color: '#000',
@@ -536,7 +536,7 @@ export const PlanPricingDetailsModal: React.FC<PlanPricingDetailsModalProps> = (
 
             <button
               type="button"
-              onClick={() => { onSelectPlan('enterprise'); onClose(); }}
+              onClick={() => { onSelectPlan('enterprise', isAnnual); onClose(); }}
               style={{
                 padding: '9px 18px', borderRadius: '10px', border: 'none',
                 background: 'linear-gradient(135deg, #ffd700 0%, #ffaa00 100%)', color: '#000',

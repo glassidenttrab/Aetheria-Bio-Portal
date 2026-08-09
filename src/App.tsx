@@ -12,7 +12,7 @@ import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import {
   Brain, Bone, Smile, Stethoscope, Clock, ShieldCheck, Sparkles, User, Zap, Crown, CheckCircle2,
   DollarSign, ArrowRight, HelpCircle, Lock, KeyRound, Database, Server, Home, Info, Layers, Activity, HeartPulse, Eye, Dna,
-  Globe, ChevronDown, Star, Menu, X, Headset
+  Globe, ChevronDown, Star, Menu, X, Headset, LogOut
 } from 'lucide-react';
 
 import { useAuth } from './contexts/AuthContext';
@@ -21,7 +21,8 @@ import { PLAN_QUOTA_CAP } from './utils/quota';
 
 const AppInner: React.FC = () => {
   const { language, setLanguage, t, supportedLanguages, currentLanguageObj } = useLanguage();
-  const { user: authUser } = useAuth();
+  const { user: authUser, signOut } = useAuth();
+  const isLoggedIn = Boolean(authUser);
   const [activeCategory, setActiveCategory] = useState<SaasCategory>('overview_about');
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
@@ -75,6 +76,17 @@ const AppInner: React.FC = () => {
           setUser(newProfile);
           await upsertUserProfileDB({ ...newProfile, authUid: authUser.id });
         }
+      } else {
+        // 로그아웃 시 게스트 상태로 초기화
+        setUser({
+          id: 'guest',
+          name: '',
+          email: '',
+          plan: 'free',
+          institution: '',
+          title: '',
+          queriesRemaining: 3
+        });
       }
     };
     syncDbUser();
@@ -113,6 +125,7 @@ const AppInner: React.FC = () => {
 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedCheckoutTier, setSelectedCheckoutTier] = useState<UserPlanTier>('pro');
+  const [selectedCheckoutIsAnnual, setSelectedCheckoutIsAnnual] = useState(false);
   const [lastReceipt, setLastReceipt] = useState<PaymentReceipt | null>(null);
 
   const [isPrivacyTermsOpen, setIsPrivacyTermsOpen] = useState(false);
@@ -123,8 +136,9 @@ const AppInner: React.FC = () => {
     setIsPrivacyTermsOpen(true);
   };
 
-  const handleOpenCheckout = (tier: UserPlanTier) => {
+  const handleOpenCheckout = (tier: UserPlanTier, isAnnual: boolean = false) => {
     setSelectedCheckoutTier(tier);
+    setSelectedCheckoutIsAnnual(isAnnual);
     setIsCheckoutOpen(true);
   };
 
@@ -140,7 +154,7 @@ const AppInner: React.FC = () => {
       email: user.email,
       tier: newPlan,
       amountUSD: receipt.amountUSD,
-      isAnnual: false
+      isAnnual: receipt.isAnnual
     });
   };
 
@@ -278,7 +292,7 @@ const AppInner: React.FC = () => {
             onClick={() => handleOpenCheckout(user.plan === 'free' ? 'pro' : 'enterprise')}
             style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(23, 31, 51, 0.9)', color: '#dae2fd', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '10px', whiteSpace: 'nowrap' }}
           >
-            <KeyRound size={13} /> {t('auth.signup_checkout_cta', '회원가입 & 결제')}
+            <KeyRound size={13} /> {isLoggedIn ? t('auth.checkout_cta_only', '결제') : t('auth.signup_checkout_cta', '회원가입 & 결제')}
           </button>
           
           <div style={{ fontSize: '0.72rem', color: '#bcc9cd', textAlign: 'center', fontWeight: 700 }}>
@@ -379,15 +393,24 @@ const AppInner: React.FC = () => {
               <Sparkles size={15} /> <span className="header-btn-text" style={{ whiteSpace: 'nowrap' }}>{t('nav.plan_details', '구독 혜택 & 서비스 상세')}</span>
             </button>
 
-            <button
-              onClick={() => {
-                setAuthModalTab('login');
-                setIsAuthModalOpen(true);
-              }}
-              style={{ padding: '7px 13px', borderRadius: '10px', border: '1px solid rgba(76, 215, 246, 0.5)', background: 'rgba(23, 31, 51, 0.9)', color: '#4cd7f6', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', flexShrink: 0 }}
-            >
-              <KeyRound size={15} /> <span className="header-btn-text" style={{ whiteSpace: 'nowrap' }}>{t('nav.auth_login', '로그인 & 회원가입')}</span>
-            </button>
+            {isLoggedIn ? (
+              <button
+                onClick={() => signOut()}
+                style={{ padding: '7px 13px', borderRadius: '10px', border: '1px solid rgba(255, 107, 129, 0.5)', background: 'rgba(23, 31, 51, 0.9)', color: '#ff6b81', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', flexShrink: 0 }}
+              >
+                <LogOut size={15} /> <span className="header-btn-text" style={{ whiteSpace: 'nowrap' }}>{t('nav.auth_logout', '로그아웃')}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setAuthModalTab('login');
+                  setIsAuthModalOpen(true);
+                }}
+                style={{ padding: '7px 13px', borderRadius: '10px', border: '1px solid rgba(76, 215, 246, 0.5)', background: 'rgba(23, 31, 51, 0.9)', color: '#4cd7f6', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', flexShrink: 0 }}
+              >
+                <KeyRound size={15} /> <span className="header-btn-text" style={{ whiteSpace: 'nowrap' }}>{t('nav.auth_login', '로그인 & 회원가입')}</span>
+              </button>
+            )}
 
             <button
               onClick={() => handleOpenCheckout('pro')}
@@ -456,6 +479,7 @@ const AppInner: React.FC = () => {
         onClose={() => setIsCheckoutOpen(false)}
         user={user}
         selectedTier={selectedCheckoutTier}
+        isAnnual={selectedCheckoutIsAnnual}
         onPaymentSuccess={handlePaymentSuccess}
       />
 
@@ -468,7 +492,7 @@ const AppInner: React.FC = () => {
       <PlanPricingDetailsModal
         isOpen={isPlanDetailsOpen}
         onClose={() => setIsPlanDetailsOpen(false)}
-        onSelectPlan={(tier) => handleOpenCheckout(tier)}
+        onSelectPlan={(tier, isAnnual) => handleOpenCheckout(tier, isAnnual)}
         currentPlan={user.plan}
       />
 

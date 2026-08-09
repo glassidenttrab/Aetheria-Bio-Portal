@@ -77,6 +77,7 @@ export interface PaymentReceipt {
   amountUSD: number;
   timestamp: string;
   cardLast4: string;
+  isAnnual: boolean;
 }
 
 export interface SenoScanAuditResult {

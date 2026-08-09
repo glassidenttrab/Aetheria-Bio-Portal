@@ -45,9 +45,11 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
 
   const isLoggedIn = user && user.id !== 'guest';
 
-  // Pro 구독자가 Enterprise로 업그레이드하는 특수 흐름에서는 플랜/결제주기 선택 없이
-  // 기존의 일할 차액 정산(Proration) 계산만 그대로 적용한다.
-  const isProToEnterpriseUpgrade = Boolean(user && user.plan === 'pro');
+  // Pro 구독자가 Enterprise로 업그레이드하는 특수 흐름(선택한 플랜이 실제로 Enterprise일 때만)에서는
+  // 플랜/결제주기 선택 없이 기존의 일할 차액 정산(Proration) 계산만 그대로 적용한다.
+  // (주의: user.plan === 'pro'만으로 판단하면, 이미 Pro인 사용자가 다른 사유로 모달을 열었을 때도
+  // 선택 여부와 무관하게 무조건 Enterprise 결제로 강제 전환되는 버그가 있었음 — tier 조건 추가로 수정.)
+  const isProToEnterpriseUpgrade = Boolean(user && user.plan === 'pro' && tier === 'enterprise');
   const effectiveTier: UserPlanTier = isProToEnterpriseUpgrade ? 'enterprise' : tier;
   const effectiveIsAnnual = isProToEnterpriseUpgrade ? false : localIsAnnual;
 

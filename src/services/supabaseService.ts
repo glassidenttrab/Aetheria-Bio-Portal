@@ -59,21 +59,26 @@ export async function fetchUserProfileDB(email: string): Promise<UserProfile | n
 
 /**
  * 2. Upsert User Profile to Supabase DB
+ *
+ * 호출부가 실제로 넘겨준 필드만 upsert 대상에 포함한다. 예전에는 넘기지
+ * 않은 필드까지 항상 기본값(plan은 'free', queries_remaining은 3 등)으로
+ * 채워서 매번 전체 행을 덮어썼기 때문에, 예를 들어 쿼터만 갱신하려고
+ * queriesRemaining 하나만 넘긴 호출이 plan을 조용히 'free'로 되돌려버리는
+ * 사고(결제 직후 플랜이 다시 free로 리셋됨)가 있었다. 신규 가입으로 행이
+ * 아예 없을 때는 DB 컬럼 자체의 DEFAULT 값(schema.sql 참고)이 적용된다.
  */
 export async function upsertUserProfileDB(profile: Partial<UserProfile> & { email: string; authUid?: string }): Promise<UserProfile | null> {
   try {
     const upsertPayload: Record<string, unknown> = {
       email: profile.email,
-      name: profile.name || '',
-      institution: profile.institution || '',
-      title: profile.title || '',
-      plan: profile.plan || 'free',
-      queries_remaining: profile.queriesRemaining ?? 3,
       updated_at: new Date().toISOString(),
     };
-    if (profile.authUid) {
-      upsertPayload.auth_uid = profile.authUid;
-    }
+    if (profile.name !== undefined) upsertPayload.name = profile.name;
+    if (profile.institution !== undefined) upsertPayload.institution = profile.institution;
+    if (profile.title !== undefined) upsertPayload.title = profile.title;
+    if (profile.plan !== undefined) upsertPayload.plan = profile.plan;
+    if (profile.queriesRemaining !== undefined) upsertPayload.queries_remaining = profile.queriesRemaining;
+    if (profile.authUid) upsertPayload.auth_uid = profile.authUid;
 
     const { data, error } = await supabase
       .from('users')

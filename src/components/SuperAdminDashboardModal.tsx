@@ -15,7 +15,7 @@ import {
 interface SuperAdminDashboardModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // 실제 Firebase 로그인 세션에서 확인된 이메일. 관리자 화이트리스트(VITE_ADMIN_EMAILS)에
+  // 실제 Supabase Auth 로그인 세션에서 확인된 이메일. 관리자 화이트리스트(VITE_ADMIN_EMAILS)에
   // 포함된 계정으로 로그인한 경우에만 마스터 콘솔 접근이 허용된다 (하드코딩 ID/PW 완전 제거).
   adminEmail: string | null;
 }

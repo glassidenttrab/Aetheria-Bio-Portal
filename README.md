@@ -29,17 +29,21 @@ npm run dev             # http://localhost:3000
 
 `.env.example`을 참고하세요. 필요한 값:
 
-- **Google OAuth**: [console.cloud.google.com](https://console.cloud.google.com/) — `VITE_GOOGLE_CLIENT_ID`
-- **Supabase**: [supabase.com/dashboard](https://supabase.com/dashboard) — `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- **Supabase**: [supabase.com/dashboard](https://supabase.com/dashboard) — `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. 로그인/회원가입(Supabase Auth)과 DB를 모두 이 프로젝트가 담당합니다.
+- **Google OAuth**: [console.cloud.google.com](https://console.cloud.google.com/) — `VITE_GOOGLE_CLIENT_ID`. 동일한 Client ID/Secret을 Supabase 대시보드 → Authentication → Providers → Google 에도 등록해야 구글 로그인이 실제로 작동합니다.
 - **PayPal**: [developer.paypal.com](https://developer.paypal.com/) — `VITE_PAYPAL_CLIENT_ID` (현재 Sandbox 전용)
-- **VITE_ADMIN_EMAILS**: 마스터 관리자 콘솔 접근을 허용할 이메일 목록 (쉼표 구분)
+- **VITE_ADMIN_EMAILS**: 마스터 관리자 콘솔 진입 화면(클라이언트 게이트)을 허용할 이메일 목록 (쉼표 구분). 실제 데이터 접근 권한은 DB의 `users.is_admin` 플래그가 결정합니다.
 - **VITE_SENTRY_DSN**: (선택) 설정 시 프로덕션 에러가 [Sentry](https://sentry.io)로 자동 리포팅됨
 
-## 데이터베이스
+## 인증 & 데이터베이스
 
-Supabase(PostgreSQL) 스키마는 [`server/db/schema.sql`](./server/db/schema.sql)에 정의되어 있습니다. Supabase SQL Editor에서 실행해 4개 테이블(`users`, `subscriptions`, `api_keys`, `skill_audit_logs`)을 생성하세요.
+로그인/회원가입은 Supabase Auth(이메일·비밀번호, Google OAuth)로 처리하고, Supabase(PostgreSQL)를 DB로 사용합니다. 스키마는 [`server/db/schema.sql`](./server/db/schema.sql)에 정의되어 있으며, Supabase SQL Editor에서 실행해 4개 테이블(`users`, `subscriptions`, `api_keys`, `skill_audit_logs`)과 `is_admin` 컬럼을 생성하세요.
 
-⚠️ 현재 RLS 정책은 전면 공개(`USING (true)`) 상태입니다. [`server/db/rls_hardening_migration.sql`](./server/db/rls_hardening_migration.sql)에 강화된 정책이 준비되어 있으나, 적용 전 파일 상단의 필수 선행 조건(Supabase Third-Party Auth 연동)을 반드시 먼저 처리해야 합니다. 선행 조건 없이 그대로 실행하면 로그인 관련 기능이 전부 깨집니다.
+RLS(Row Level Security) 강화 정책은 [`server/db/rls_hardening_migration.sql`](./server/db/rls_hardening_migration.sql)에 준비되어 있습니다 (파일 상단에 실행 전 선행 조건 명시). 적용 후에는 아래 한 줄로 본인 계정에 관리자 권한을 부여하세요:
+
+```sql
+UPDATE public.users SET is_admin = true WHERE email = 'your-email@example.com';
+```
 
 ## 배포
 

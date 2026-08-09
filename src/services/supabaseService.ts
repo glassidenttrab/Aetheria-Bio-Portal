@@ -55,19 +55,24 @@ export async function fetchUserProfileDB(email: string): Promise<UserProfile | n
 /**
  * 2. Upsert User Profile to Supabase DB
  */
-export async function upsertUserProfileDB(profile: Partial<UserProfile> & { email: string }): Promise<UserProfile | null> {
+export async function upsertUserProfileDB(profile: Partial<UserProfile> & { email: string; authUid?: string }): Promise<UserProfile | null> {
   try {
+    const upsertPayload: Record<string, unknown> = {
+      email: profile.email,
+      name: profile.name || '',
+      institution: profile.institution || '',
+      title: profile.title || '',
+      plan: profile.plan || 'free',
+      queries_remaining: profile.queriesRemaining ?? 3,
+      updated_at: new Date().toISOString(),
+    };
+    if (profile.authUid) {
+      upsertPayload.auth_uid = profile.authUid;
+    }
+
     const { data, error } = await supabase
       .from('users')
-      .upsert({
-        email: profile.email,
-        name: profile.name || '',
-        institution: profile.institution || '',
-        title: profile.title || '',
-        plan: profile.plan || 'free',
-        queries_remaining: profile.queriesRemaining ?? 3,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' })
+      .upsert(upsertPayload, { onConflict: 'email' })
       .select()
       .single();
 

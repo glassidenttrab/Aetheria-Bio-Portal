@@ -10,7 +10,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 2. Create 'users' Table (회원 계정 & 구독 프로필)
 CREATE TABLE IF NOT EXISTS public.users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  auth_uid VARCHAR(255) UNIQUE,
+  auth_uid VARCHAR(255) UNIQUE, -- Supabase Auth 세션의 auth.uid() (text)를 저장. RLS 본인 행 판별 기준.
   email VARCHAR(255) UNIQUE NOT NULL,
   name VARCHAR(100) DEFAULT 'Dr. Seung-Woo Kim',
   institution VARCHAR(255) DEFAULT 'Aetheria BioTech Institute',
@@ -18,9 +18,13 @@ CREATE TABLE IF NOT EXISTS public.users (
   plan VARCHAR(20) DEFAULT 'free', -- 'free', 'pro', 'enterprise'
   queries_remaining INT DEFAULT 3,
   avatar_url TEXT,
+  is_admin BOOLEAN DEFAULT FALSE, -- true인 계정은 RLS에서 전체 회원 데이터 접근 허용 (관리자 콘솔용)
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- 이미 배포된 DB에 스키마를 다시 적용하는 경우를 위한 안전한 컬럼 추가 (신규 설치에는 영향 없음)
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
 
 -- 3. Create 'subscriptions' Table (결제 & 정기 구독 이력)
 CREATE TABLE IF NOT EXISTS public.subscriptions (

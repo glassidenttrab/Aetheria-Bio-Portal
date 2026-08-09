@@ -74,26 +74,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setIsProcessing(true);
     setAuthError(null);
     try {
-      const loggedUser = await signInWithGoogle();
-
-      // If user profile returned synchronously (popup/demo)
-      if (loggedUser) {
-        if (onLoginSuccess) {
-          onLoginSuccess(loggedUser);
-        }
-        setIsSuccess(true);
-        setTimeout(() => {
-          setIsSuccess(false);
-          onClose();
-          if (onSuccess) onSuccess();
-        }, 1200);
-      } else {
-        // Redirecting to Google OAuth Provider page
-        onClose();
-      }
+      // Supabase OAuth는 항상 Google 로그인 페이지로 브라우저를 리다이렉트한다.
+      // 로그인 완료 후 앱으로 돌아오면 AuthContext의 onAuthStateChange가 세션을 반영한다.
+      await signInWithGoogle();
+      onClose();
     } catch (err: any) {
       setAuthError(t('auth.google_error', 'Google 인증 실패: ') + (err.message || t('auth.try_again', '다시 시도해 주세요.')));
-    } finally {
       setIsProcessing(false);
     }
   };

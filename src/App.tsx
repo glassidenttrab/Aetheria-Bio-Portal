@@ -62,9 +62,9 @@ const AppInner: React.FC = () => {
         if (dbProfile) {
           setUser(dbProfile);
         } else {
-          const defaultName = authUser.displayName || authUser.email.split('@')[0] || '';
+          const defaultName = authUser.user_metadata?.full_name || authUser.email.split('@')[0] || '';
           const newProfile: UserProfile = {
-            id: authUser.uid,
+            id: authUser.id,
             name: defaultName,
             email: authUser.email,
             plan: 'free',
@@ -73,7 +73,7 @@ const AppInner: React.FC = () => {
             queriesRemaining: 3
           };
           setUser(newProfile);
-          await upsertUserProfileDB(newProfile);
+          await upsertUserProfileDB({ ...newProfile, authUid: authUser.id });
         }
       }
     };

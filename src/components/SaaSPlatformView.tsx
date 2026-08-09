@@ -8,7 +8,7 @@ import { ScienceSkillsCatalogModal } from './ScienceSkillsCatalogModal';
 import { EnterpriseB2BConsoleModal } from './EnterpriseB2BConsoleModal';
 import { useLanguage } from '../contexts/LanguageContext';
 import { PLAN_QUOTA_CAP, resolveQuota } from '../utils/quota';
-import { fetchTargetVaultDB, addTargetVaultItemDB, removeTargetVaultItemDB } from '../services/supabaseService';
+import { fetchTargetVaultDB, addTargetVaultItemDB, removeTargetVaultItemDB, saveSkillAuditLogDB } from '../services/supabaseService';
 import {
   Brain, Bone, Smile, Stethoscope, Clock, Sparkles, Search, Dna, Download, ShieldCheck, CheckCircle, Zap,
   ExternalLink, KeyRound, ArrowRight, Activity, FlaskConical, Layers, Crown, Lock, Eye, ChevronRight, Filter, Info, HeartPulse,
@@ -160,10 +160,19 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
 
     const targetToUse = targetKeyToRun || selectedTargetKey;
     setIsAnalyzing(true);
+    const startedAt = Date.now();
     try {
       const res = await runNeuroLongevityAnalysis(activeCategory, targetToUse);
       setAnalysisResult(res);
       onUpdateUser({ queriesRemaining: queriesRemaining - 1 });
+      saveSkillAuditLogDB({
+        skill_id: `ai_target_scan_${activeCategory}`,
+        skill_name: t(`dept.${activeCategory}`, activeCategory),
+        category: activeCategory,
+        query_target: `${res.geneSymbol} (${res.targetName})`,
+        execution_time_ms: Date.now() - startedAt,
+        is_bookmarked: false
+      });
     } finally {
       setIsAnalyzing(false);
     }

@@ -1,172 +1,137 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, RotateCw, ZoomIn, ZoomOut, Box, Layers, Download, Sparkles, Database, Search, Tag } from 'lucide-react';
+import * as $3Dmol from '3dmol';
+import { X, RotateCw, ZoomIn, ZoomOut, Box, Eye, Database, Search, Loader2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { fetchAlphaFoldPrediction, fetchAlphaFoldPdbText, AlphaFoldPrediction, AlphaFoldNotFoundError } from '../services/alphafoldService';
 
 interface Mol3DViewerModalProps {
   isOpen: boolean;
   onClose: () => void;
   proteinName?: string;
   pdbId?: string;
+  uniprotId?: string;
 }
 
 export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
   isOpen,
   onClose,
   proteinName = 'MAPT (Microtubule-Associated Protein Tau)',
-  pdbId = 'AF-P10636-F1'
+  pdbId = 'AF-P10636-F1',
+  uniprotId = 'P10636'
 }) => {
   const { t } = useLanguage();
   const [activeStyle, setActiveStyle] = useState<'ribbon' | 'sticks' | 'spheres'>('ribbon');
-  const [showLabels, setShowLabels] = useState(false);
-  const [customPdbQuery, setCustomPdbQuery] = useState('');
-  const [currentPdb, setCurrentPdb] = useState(pdbId);
+  const [showSurface, setShowSurface] = useState(false);
+  const [customQuery, setCustomQuery] = useState('');
+  const [currentUniprotId, setCurrentUniprotId] = useState(uniprotId);
   const [currentProtein, setCurrentProtein] = useState(proteinName);
-  const [rotationAngle, setRotationAngle] = useState(0);
   const [isAutoRotate, setIsAutoRotate] = useState(true);
-  const [zoomLevel, setZoomLevel] = useState(1);
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [prediction, setPrediction] = useState<AlphaFoldPrediction | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const viewerRef = useRef<any>(null);
 
   useEffect(() => {
-    setCurrentPdb(pdbId);
+    setCurrentUniprotId(uniprotId);
     setCurrentProtein(proteinName);
-  }, [pdbId, proteinName]);
+  }, [uniprotId, proteinName]);
 
-  // Auto rotation simulation on Canvas
+  // AlphaFold DB Live API에서 실제 pLDDT 메타데이터 + 구조 파일을 가져와 3dmol로 렌더링
   useEffect(() => {
-    if (!isOpen || !isAutoRotate) return;
-    const interval = setInterval(() => {
-      setRotationAngle(prev => (prev + 1.5) % 360);
-    }, 30);
-    return () => clearInterval(interval);
-  }, [isOpen, isAutoRotate]);
+    if (!isOpen || !containerRef.current) return;
 
-  // Canvas 3D Molecular rendering simulation
-  useEffect(() => {
-    if (!isOpen || !canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    let cancelled = false;
+    setIsLoading(true);
+    setError(null);
 
-    const width = canvas.width;
-    const height = canvas.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const container = containerRef.current;
+    container.innerHTML = '';
+    const viewer = $3Dmol.createViewer(container, { backgroundColor: '#050a14' });
+    viewerRef.current = viewer;
 
-    ctx.clearRect(0, 0, width, height);
+    (async () => {
+      try {
+        const pred = await fetchAlphaFoldPrediction(currentUniprotId);
+        const pdbText = await fetchAlphaFoldPdbText(pred.pdbUrl);
+        if (cancelled) return;
 
-    // Background Cyber Grid
-    ctx.strokeStyle = 'rgba(76, 215, 246, 0.08)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x < width; x += 40) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    for (let y = 0; y < height; y += 40) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
+        viewer.addModel(pdbText, 'pdb');
+        applyStyle(viewer, activeStyle, showSurface);
+        viewer.zoomTo();
+        viewer.render();
+        if (isAutoRotate) viewer.spin('y', 1);
 
-    // Calculate unique hash seed from current PDB string
-    let seed = 0;
-    for (let s = 0; s < currentPdb.length; s++) {
-      seed = (seed << 5) - seed + currentPdb.charCodeAt(s);
-      seed |= 0;
-    }
-    const seedAbs = Math.abs(seed);
-
-    // Dynamic 3D Structural Parameters derived from seed
-    const numNodes = 32 + (seedAbs % 24); // 32 ~ 56 nodes
-    const helixFrequency = 2 + ((seedAbs % 5) * 0.8); // unique helix pitch
-    const loopFactor = 0.5 + ((seedAbs % 7) * 0.1);
-    const rad = (rotationAngle * Math.PI) / 180;
-    const baseRadius = (100 + (seedAbs % 40)) * zoomLevel;
-
-    ctx.save();
-    ctx.translate(centerX, centerY);
-
-    const nodes: { x: number; y: number; z: number; color: string; label: string }[] = [];
-
-    const paletteSets = [
-      ['#4cd7f6', '#4edea3', '#d0bcff', '#ffd700'],
-      ['#ff6b81', '#ffd700', '#4cd7f6', '#ffffff'],
-      ['#4edea3', '#1bbd85', '#d0bcff', '#4cd7f6'],
-      ['#d0bcff', '#ff6b81', '#4edea3', '#ffd700']
-    ];
-    const activePalette = paletteSets[seedAbs % paletteSets.length];
-
-    // Standard 3-letter amino acid residue codes for deterministic per-protein labeling
-    const aminoAcids = ['ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL'];
-
-    for (let i = 0; i < numNodes; i++) {
-      const theta = (i / numNodes) * Math.PI * helixFrequency;
-      const phi = (i / numNodes) * Math.PI * 3 * loopFactor;
-
-      // Unique 3D Folding Helix & Beta-sheet Combination
-      const rawX = Math.cos(theta + rad) * baseRadius * (0.7 + 0.3 * Math.sin(phi + seedAbs));
-      const rawY = (i - numNodes / 2) * ((8 + (seedAbs % 6)) * zoomLevel) + (Math.cos(phi) * 20);
-      const rawZ = Math.sin(theta + rad) * baseRadius * (0.8 + 0.2 * Math.cos(theta));
-
-      const color = activePalette[i % activePalette.length];
-      const residueCode = aminoAcids[(seedAbs + i * 7) % aminoAcids.length];
-      const residueNumber = i + 1 + (seedAbs % 50);
-      const label = `${residueCode}-${residueNumber}`;
-
-      nodes.push({ x: rawX, y: rawY, z: rawZ, color, label });
-    }
-
-    // Sort by Z for 3D depth rendering
-    nodes.sort((a, b) => a.z - b.z);
-
-    // Draw backbone lines
-    ctx.beginPath();
-    ctx.lineWidth = activeStyle === 'ribbon' ? 6 : activeStyle === 'sticks' ? 3 : 1;
-    ctx.strokeStyle = 'rgba(76, 215, 246, 0.6)';
-    nodes.forEach((node, index) => {
-      if (index === 0) ctx.moveTo(node.x, node.y);
-      else ctx.lineTo(node.x, node.y);
-    });
-    ctx.stroke();
-
-    // Draw 3D Atoms / Ribbons
-    nodes.forEach(node => {
-      const scale = (node.z + 200) / 400;
-      const size = (activeStyle === 'spheres' ? 18 : activeStyle === 'ribbon' ? 12 : 7) * scale * zoomLevel;
-
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, Math.max(3, size), 0, Math.PI * 2);
-      ctx.fillStyle = node.color;
-      ctx.shadowColor = node.color;
-      ctx.shadowBlur = 15 * scale;
-      ctx.fill();
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.stroke();
-
-      if (showLabels) {
-        ctx.shadowBlur = 0;
-        ctx.font = `${Math.max(9, 11 * scale)}px monospace`;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(node.label, node.x + Math.max(3, size) + 4, node.y);
+        setPrediction(pred);
+      } catch (err) {
+        if (cancelled) return;
+        if (err instanceof AlphaFoldNotFoundError) {
+          setError(err.message);
+        } else {
+          setError('AlphaFold API 연결에 실패했습니다. 네트워크 상태를 확인하거나 잠시 후 다시 시도해주세요.');
+        }
+        setPrediction(null);
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
-    });
+    })();
 
-    ctx.restore();
-  }, [isOpen, rotationAngle, activeStyle, zoomLevel, showLabels]);
+    return () => {
+      cancelled = true;
+      viewer.clear();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, currentUniprotId]);
+
+  // 표현 양식 / 표면 토글 변경 시 이미 로드된 모델에 실시간 재적용
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || isLoading || error) return;
+    applyStyle(viewer, activeStyle, showSurface);
+    viewer.render();
+  }, [activeStyle, showSurface]);
+
+  // 자동 회전 토글
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || isLoading || error) return;
+    if (isAutoRotate) viewer.spin('y', 1);
+    else viewer.spin(false);
+  }, [isAutoRotate, isLoading, error]);
+
+  function applyStyle(viewer: any, style: 'ribbon' | 'sticks' | 'spheres', surface: boolean) {
+    viewer.setStyle({}, {});
+    if (style === 'ribbon') {
+      // AlphaFold DB 공식 컬러 컨벤션: B-factor 컬럼에 저장된 pLDDT 값을 신뢰도 색상으로 매핑
+      viewer.setStyle({}, { cartoon: { colorscheme: { prop: 'b', gradient: 'roygb', min: 50, max: 90 } } });
+    } else if (style === 'sticks') {
+      viewer.setStyle({}, { stick: { colorscheme: { prop: 'b', gradient: 'roygb', min: 50, max: 90 } } });
+    } else {
+      viewer.setStyle({}, { sphere: { colorscheme: { prop: 'b', gradient: 'roygb', min: 50, max: 90 }, scale: 0.35 } });
+    }
+    viewer.removeAllSurfaces();
+    if (surface) {
+      viewer.addSurface($3Dmol.SurfaceType.VDW, { opacity: 0.35, color: 'cyan' });
+    }
+  }
+
+  function handleZoom(factor: number) {
+    const viewer = viewerRef.current;
+    if (!viewer) return;
+    viewer.zoom(factor, 300);
+  }
 
   if (!isOpen) return null;
 
-  const handleSearchPdb = (e: React.FormEvent) => {
+  const handleSearchUniprot = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customPdbQuery.trim()) return;
-    setCurrentPdb(customPdbQuery.toUpperCase());
-    setCurrentProtein(`Protein Target (${customPdbQuery.toUpperCase()})`);
-    setCustomPdbQuery('');
+    if (!customQuery.trim()) return;
+    const nextId = customQuery.trim().toUpperCase();
+    setCurrentUniprotId(nextId);
+    setCurrentProtein(`Protein Target (${nextId})`);
+    setCustomQuery('');
   };
 
   return (
@@ -202,11 +167,11 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
                   {currentProtein}
                 </h3>
                 <span className="badge badge-cyan" style={{ fontSize: '0.78rem', fontWeight: 800 }}>
-                  {currentPdb}
+                  {prediction?.modelEntityId || pdbId}
                 </span>
               </div>
               <p style={{ fontSize: '0.8rem', color: '#8899a6', margin: 0, marginTop: '2px' }}>
-                AlphaFold DB & RCSB PDB 기반 시뮬레이션 프리뷰 (Demo Preview Canvas)
+                AlphaFold DB Live API 실시간 연동 (alphafold.ebi.ac.uk)
               </p>
             </div>
           </div>
@@ -231,7 +196,6 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
           {/* Style Controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '0.8rem', color: '#8899a6', fontWeight: 700, marginRight: '4px' }}>
-              <Layers size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
               {t('viewer.style', '구조 양식')}:
             </span>
             {(['ribbon', 'sticks', 'spheres'] as const).map(style => (
@@ -251,16 +215,16 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
             ))}
 
             <button
-              onClick={() => setShowLabels(!showLabels)}
+              onClick={() => setShowSurface(!showSurface)}
               style={{
                 padding: '6px 14px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800,
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
-                border: showLabels ? '1px solid rgba(255, 215, 0, 0.6)' : '1px solid rgba(255,255,255,0.1)',
-                background: showLabels ? 'rgba(255, 215, 0, 0.2)' : 'transparent',
-                color: showLabels ? '#ffd700' : '#8899a6'
+                border: showSurface ? '1px solid rgba(255, 215, 0, 0.6)' : '1px solid rgba(255,255,255,0.1)',
+                background: showSurface ? 'rgba(255, 215, 0, 0.2)' : 'transparent',
+                color: showSurface ? '#ffd700' : '#8899a6'
               }}
             >
-              <Tag size={14} /> {t('viewer.labels', '라벨')}
+              <Eye size={14} /> {t('viewer.surface', '표면')}
             </button>
           </div>
 
@@ -281,14 +245,14 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
 
             <div style={{ display: 'flex', gap: '4px' }}>
               <button
-                onClick={() => setZoomLevel(prev => Math.min(prev + 0.2, 2.0))}
+                onClick={() => handleZoom(1.2)}
                 style={{ padding: '6px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#dae2fd', cursor: 'pointer' }}
                 title="Zoom In"
               >
                 <ZoomIn size={16} />
               </button>
               <button
-                onClick={() => setZoomLevel(prev => Math.max(prev - 0.2, 0.6))}
+                onClick={() => handleZoom(0.8)}
                 style={{ padding: '6px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#dae2fd', cursor: 'pointer' }}
                 title="Zoom Out"
               >
@@ -297,13 +261,13 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
             </div>
           </div>
 
-          {/* Direct PDB ID Search Input */}
-          <form onSubmit={handleSearchPdb} style={{ display: 'flex', gap: '6px' }}>
+          {/* Direct UniProt ID Search Input */}
+          <form onSubmit={handleSearchUniprot} style={{ display: 'flex', gap: '6px' }}>
             <input
               type="text"
-              placeholder={t('viewer.search_pdb', 'PDB ID (예: 6VXX, P10636)')}
-              value={customPdbQuery}
-              onChange={e => setCustomPdbQuery(e.target.value)}
+              placeholder={t('viewer.search_pdb', 'UniProt ID (예: P10636)')}
+              value={customQuery}
+              onChange={e => setCustomQuery(e.target.value)}
               style={{
                 padding: '6px 12px', borderRadius: '8px', background: 'rgba(23, 31, 51, 0.8)',
                 border: '1px solid rgba(76, 215, 246, 0.3)', color: '#ffffff', fontSize: '0.8rem', width: '180px'
@@ -321,53 +285,50 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
           </form>
         </div>
 
-        {/* 3D Canvas Area */}
-        <div style={{ flex: 1, position: 'relative', background: '#050a14', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <canvas
-            ref={canvasRef}
-            width={900}
-            height={500}
-            style={{ width: '100%', height: '100%', cursor: 'grab' }}
-          />
+        {/* 3D Viewer Area */}
+        <div style={{ flex: 1, position: 'relative', background: '#050a14' }}>
+          <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 
-          {/* 3D Structural Metadata Overlay Badge */}
-          {(() => {
-            let seed = 0;
-            for (let s = 0; s < currentPdb.length; s++) {
-              seed = (seed << 5) - seed + currentPdb.charCodeAt(s);
-              seed |= 0;
-            }
-            const sAbs = Math.abs(seed);
-            const plddt = (91.5 + ((sAbs % 75) / 10)).toFixed(1);
-            const resolution = (1.45 + ((sAbs % 60) / 100)).toFixed(2);
-            const resCount = 280 + (sAbs % 350);
-            const pockets = [
-              'Lys-180, Asp-215, Glu-280',
-              'His-92, Arg-145, Trp-310',
-              'Ser-45, Cys-120, Phe-204',
-              'Tyr-110, Leu-198, Val-250'
-            ];
-            const pocket = pockets[sAbs % pockets.length];
+          {isLoading && (
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              gap: '12px', color: '#4cd7f6', background: 'rgba(5, 10, 20, 0.6)'
+            }}>
+              <Loader2 size={32} className="spin" />
+              <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>AlphaFold DB에서 실시간 구조 데이터를 불러오는 중...</span>
+            </div>
+          )}
 
-            return (
-              <div style={{
-                position: 'absolute', bottom: '20px', left: '20px',
-                padding: '12px 18px', borderRadius: '14px', background: 'rgba(10, 16, 31, 0.85)',
-                backdropFilter: 'blur(10px)', border: '1px solid rgba(76, 215, 246, 0.3)',
-                display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '340px'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: '#4cd7f6', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Sparkles size={14} /> AlphaFold DB Confidence (pLDDT: {plddt})
-                </div>
-                <div style={{ fontSize: '0.8rem', color: '#ffffff', fontWeight: 700 }}>
-                  Resolution: {resolution} Å | Chain A [Residues 1-{resCount}]
-                </div>
-                <div style={{ fontSize: '0.72rem', color: '#8899a6' }}>
-                  Binding Sites: Active Pocket ({pocket})
-                </div>
+          {!isLoading && error && (
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              gap: '10px', color: '#ff6b81', background: 'rgba(5, 10, 20, 0.75)', padding: '24px', textAlign: 'center'
+            }}>
+              <AlertTriangle size={32} />
+              <span style={{ fontSize: '0.9rem', fontWeight: 700, maxWidth: '380px' }}>{error}</span>
+              <span style={{ fontSize: '0.78rem', color: '#8899a6' }}>UniProt ID: {currentUniprotId}</span>
+            </div>
+          )}
+
+          {/* 실시간 AlphaFold 신뢰도 메타데이터 오버레이 */}
+          {!isLoading && !error && prediction && (
+            <div style={{
+              position: 'absolute', bottom: '20px', left: '20px',
+              padding: '12px 18px', borderRadius: '14px', background: 'rgba(10, 16, 31, 0.85)',
+              backdropFilter: 'blur(10px)', border: '1px solid rgba(76, 215, 246, 0.3)',
+              display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '360px'
+            }}>
+              <div style={{ fontSize: '0.75rem', color: '#4cd7f6', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Database size={14} /> AlphaFold DB Confidence (pLDDT: {prediction.globalPlddt.toFixed(1)})
               </div>
-            );
-          })()}
+              <div style={{ fontSize: '0.8rem', color: '#ffffff', fontWeight: 700 }}>
+                {prediction.organismName || 'Homo sapiens'} · Chain A [1-{prediction.sequenceLength}]
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#8899a6' }}>
+                Very High {(prediction.fractionVeryHigh * 100).toFixed(0)}% · Confident {(prediction.fractionConfident * 100).toFixed(0)}% · Low {(prediction.fractionLow * 100).toFixed(0)}% · Very Low {(prediction.fractionVeryLow * 100).toFixed(0)}%
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Modal Footer */}
@@ -377,7 +338,7 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
         }}>
           <div style={{ fontSize: '0.8rem', color: '#8899a6', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Database size={16} color="#4cd7f6" />
-            <span>Demo Simulation Preview (실제 AlphaFold/RCSB 라이브 연동 준비 중)</span>
+            <span>Connected to AlphaFold DB (EBI) Live API</span>
           </div>
 
           <button

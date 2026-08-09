@@ -41,6 +41,7 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
   const [is3DViewerOpen, setIs3DViewerOpen] = useState<boolean>(false);
   const [active3DPdbId, setActive3DPdbId] = useState<string>('AF-P10636-F1');
   const [active3DProteinName, setActive3DProteinName] = useState<string>('MAPT (Microtubule-Associated Protein Tau)');
+  const [active3DUniprotId, setActive3DUniprotId] = useState<string>('P10636');
   const [isSkillCatalogOpen, setIsSkillCatalogOpen] = useState<boolean>(false);
   const [isB2BConsoleOpen, setIsB2BConsoleOpen] = useState<boolean>(false);
 
@@ -89,9 +90,10 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
     });
   };
 
-  const handleOpen3DViewer = (pdbId?: string, proteinName?: string) => {
+  const handleOpen3DViewer = (pdbId?: string, proteinName?: string, uniprotId?: string) => {
     if (pdbId) setActive3DPdbId(pdbId);
     if (proteinName) setActive3DProteinName(proteinName);
+    if (uniprotId) setActive3DUniprotId(uniprotId);
     setIs3DViewerOpen(true);
   };
 
@@ -304,11 +306,11 @@ Status: High Freedom to Operate (FTO Clear)
               const targetPdb = TARGET_PDB_MAP[selectedTargetKey];
               
               if (currentInfo && targetPdb) {
-                handleOpen3DViewer(targetPdb, `${currentInfo.geneSymbol} - ${currentInfo.targetName}`);
+                handleOpen3DViewer(targetPdb, `${currentInfo.geneSymbol} - ${currentInfo.targetName}`, currentInfo.uniprotId);
               } else if (deptProtein) {
-                handleOpen3DViewer(deptProtein.pdbId, deptProtein.proteinName);
+                handleOpen3DViewer(deptProtein.pdbId, deptProtein.proteinName, deptProtein.uniprotId);
               } else {
-                handleOpen3DViewer('AF-P10636-F1', 'MAPT - Microtubule-Associated Protein Tau');
+                handleOpen3DViewer('AF-P10636-F1', 'MAPT - Microtubule-Associated Protein Tau', 'P10636');
               }
             }}
             style={{
@@ -532,6 +534,7 @@ Status: High Freedom to Operate (FTO Clear)
         onClose={() => setIs3DViewerOpen(false)}
         pdbId={active3DPdbId}
         proteinName={active3DProteinName}
+        uniprotId={active3DUniprotId}
       />
 
       {/* 38 Science Skills Catalog Modal */}

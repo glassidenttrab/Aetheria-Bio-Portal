@@ -270,7 +270,7 @@ export const PlanPricingDetailsModal: React.FC<PlanPricingDetailsModalProps> = (
                     </li>
                     <li style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', color: '#dae2fd', lineHeight: '1.3', wordBreak: 'break-word' }}>
                       <CheckCircle2 size={15} color="#4cd7f6" style={{ flexShrink: 0, marginTop: '2px' }} />
-                      <span>{t('pmodal.pro_f5', '월 100회 AI 자동 분석 파이프라인 리포트 생성')}</span>
+                      <span>{t('pmodal.pro_f5', '월 30회 AI 자동 분석 파이프라인 리포트 생성 (개인 연구자 / 스타트업)')}</span>
                     </li>
                     <li style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', color: '#dae2fd', lineHeight: '1.3', wordBreak: 'break-word' }}>
                       <CheckCircle2 size={15} color="#4cd7f6" style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -333,7 +333,7 @@ export const PlanPricingDetailsModal: React.FC<PlanPricingDetailsModalProps> = (
                     </li>
                     <li style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', color: '#fff', fontWeight: 700, lineHeight: '1.3', wordBreak: 'break-word' }}>
                       <CheckCircle2 size={15} color="#ffd700" style={{ flexShrink: 0, marginTop: '2px' }} />
-                      <span>{t('pmodal.ent_f1', '무제한(99,999회+) 38+ 사이언스 스킬 파이프라인')}</span>
+                      <span>{t('pmodal.ent_f1', '월 500회 38+ 사이언스 스킬 파이프라인')}</span>
                     </li>
                     <li style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', color: '#fff', fontWeight: 700, lineHeight: '1.3', wordBreak: 'break-word' }}>
                       <CheckCircle2 size={15} color="#ffd700" style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -411,13 +411,13 @@ export const PlanPricingDetailsModal: React.FC<PlanPricingDetailsModalProps> = (
                     <td style={{ padding: '10px 16px', color: '#dae2fd' }}>{t('pmodal.m_row3', 'ChEMBL IC50 결합 친화도 예측')}</td>
                     <td style={{ padding: '10px 16px', color: '#bcc9cd' }}>{t('pmodal.m_r3_free', '제한적 상위 1개')}</td>
                     <td style={{ padding: '10px 16px', color: '#4cd7f6', fontWeight: 800 }}>{t('pmodal.m_r3_pro', '전체 억제제 결합력 계산')}</td>
-                    <td style={{ padding: '10px 16px', color: '#ffd700', fontWeight: 800 }}>{t('pmodal.m_r3_ent', '무제한 스크리닝 & 약물 재창출')}</td>
+                    <td style={{ padding: '10px 16px', color: '#ffd700', fontWeight: 800 }}>{t('pmodal.m_r3_ent', '월 500회 스크리닝 & 약물 재창출')}</td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                     <td style={{ padding: '10px 16px', color: '#dae2fd' }}>{t('pmodal.m_row4', '월 파이프라인 리포트 생성 한도')}</td>
-                    <td style={{ padding: '10px 16px', color: '#bcc9cd' }}>{t('pmodal.m_r4_free', '월 3회')}</td>
-                    <td style={{ padding: '10px 16px', color: '#4cd7f6', fontWeight: 800 }}>{t('pmodal.m_r4_pro', '월 100회')}</td>
-                    <td style={{ padding: '10px 16px', color: '#ffd700', fontWeight: 900 }}>{t('pmodal.m_r4_ent', '무제한 (99,999회+)')}</td>
+                    <td style={{ padding: '10px 16px', color: '#bcc9cd' }}>{t('pmodal.m_r4_free', '일 3회')}</td>
+                    <td style={{ padding: '10px 16px', color: '#4cd7f6', fontWeight: 800 }}>{t('pmodal.m_r4_pro', '월 30회')}</td>
+                    <td style={{ padding: '10px 16px', color: '#ffd700', fontWeight: 900 }}>{t('pmodal.m_r4_ent', '월 500회')}</td>
                   </tr>
 
                   {/* Category 2 */}
@@ -482,7 +482,7 @@ export const PlanPricingDetailsModal: React.FC<PlanPricingDetailsModalProps> = (
                   <HelpCircle size={16} /> {t('pmodal.faq_q1', 'Q1. Pro($490/월) 결제 즉시 어떤 기능이 활성화되나요?')}
                 </h4>
                 <p style={{ fontSize: '0.82rem', color: '#dae2fd', margin: 0, lineHeight: '1.5' }}>
-                  {t('pmodal.faq_a1', '결제가 승인되는 즉시 계정이 Pro 플랜으로 업그레이드되며, 전신 10대 의학과 AI 표적분자 정밀 스캐너, AlphaFold 3D 구조 분석, FTO 특허 판단 및 월 100회 파이프라인 리포트 생성 권한이 즉각 제공됩니다.')}
+                  {t('pmodal.faq_a1', '결제가 승인되는 즉시 계정이 Pro 플랜으로 업그레이드되며, 전신 10대 의학과 AI 표적분자 정밀 스캐너, AlphaFold 3D 구조 분석, FTO 특허 판단 및 월 30회 파이프라인 리포트 생성 권한이 즉각 제공됩니다.')}
                 </p>
               </div>
 

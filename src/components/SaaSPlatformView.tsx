@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { runNeuroLongevityAnalysis, getDepartmentTargetMap, TARGET_PDB_MAP, DEPARTMENT_DEFAULT_PROTEINS } from '../services/neuroLongevityEngine';
 import { TargetAnalysisResult, UserProfile, UserPlanTier, SaasCategory } from '../types';
 import { Protein3DViewer } from './Protein3DViewer';
@@ -7,6 +7,7 @@ import { Mol3DViewerModal } from './Mol3DViewerModal';
 import { ScienceSkillsCatalogModal } from './ScienceSkillsCatalogModal';
 import { EnterpriseB2BConsoleModal } from './EnterpriseB2BConsoleModal';
 import { useLanguage } from '../contexts/LanguageContext';
+import { PLAN_QUOTA_CAP, resolveQuota } from '../utils/quota';
 import {
   Brain, Bone, Smile, Stethoscope, Clock, Sparkles, Search, Dna, Download, ShieldCheck, CheckCircle, Zap,
   ExternalLink, KeyRound, ArrowRight, Activity, FlaskConical, Layers, Crown, Lock, Eye, ChevronRight, Filter, Info, HeartPulse,
@@ -19,6 +20,7 @@ interface SaaSPlatformViewProps {
   onSelectCategory: (cat: SaasCategory) => void;
   onOpenCheckout: (tier: UserPlanTier) => void;
   onOpenPlanDetails?: () => void;
+  onUpdateUser: (updated: Partial<UserProfile>) => void;
 }
 
 export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
@@ -26,7 +28,8 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
   activeCategory,
   onSelectCategory,
   onOpenCheckout,
-  onOpenPlanDetails
+  onOpenPlanDetails,
+  onUpdateUser
 }) => {
   const { t } = useLanguage();
   const [selectedTargetKey, setSelectedTargetKey] = useState<string>('TAU');
@@ -50,6 +53,16 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
       return ['TAU', 'PCSK9'];
     }
   });
+
+  // 로그인/플랜 변경 시 일/월 주기가 넘어갔으면 남은 횟수를 플랜 한도로 리셋해서 화면에 즉시 반영
+  useEffect(() => {
+    if (user.plan === 'free' || !user.email) return;
+    const { queriesRemaining, didReset } = resolveQuota(user.email, user.plan, user.queriesRemaining);
+    if (didReset) {
+      onUpdateUser({ queriesRemaining });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.email, user.plan]);
 
   const handleOpenB2BConsole = () => {
     const isLoggedIn = Boolean(user && user.id && user.id !== 'guest' && user.id !== 'guest_user');
@@ -110,11 +123,36 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
       onOpenCheckout('pro');
       return;
     }
+
+    // 주기(Pro=월/Enterprise=월)가 바뀌었으면 남은 횟수를 플랜 한도로 리셋
+    const { queriesRemaining, didReset } = resolveQuota(user.email, user.plan, user.queriesRemaining);
+    if (didReset) {
+      onUpdateUser({ queriesRemaining });
+    }
+
+    // 한도 소진 시: 안내 메시지 + Enterprise 업그레이드 유도 후 실행 차단
+    if (queriesRemaining <= 0) {
+      const cap = PLAN_QUOTA_CAP[user.plan];
+      if (user.plan === 'pro') {
+        if (window.confirm(
+          `이번 달 파이프라인 리포트 생성 한도(월 ${cap}회)를 모두 사용하셨습니다.\n` +
+          `다음 달 1일에 자동으로 초기화되며, Enterprise 플랜(월 500회)으로 업그레이드하면 즉시 계속 이용하실 수 있습니다.\n` +
+          `지금 Enterprise로 업그레이드하시겠습니까?`
+        )) {
+          onOpenCheckout('enterprise');
+        }
+      } else {
+        alert(`이번 달 파이프라인 리포트 생성 한도(월 ${cap}회)를 모두 사용하셨습니다.\n다음 달 1일에 자동으로 초기화됩니다.`);
+      }
+      return;
+    }
+
     const targetToUse = targetKeyToRun || selectedTargetKey;
     setIsAnalyzing(true);
     try {
       const res = await runNeuroLongevityAnalysis(activeCategory, targetToUse);
       setAnalysisResult(res);
+      onUpdateUser({ queriesRemaining: queriesRemaining - 1 });
     } finally {
       setIsAnalyzing(false);
     }
@@ -200,6 +238,11 @@ Status: High Freedom to Operate (FTO Clear)
                 <span className="badge badge-purple" style={{ fontSize: '0.95rem', fontWeight: 800 }}>Free Starter Tier</span>
               )}
             </div>
+            {user.plan !== 'free' && (
+              <div style={{ marginTop: '8px', fontSize: '0.8rem', color: user.queriesRemaining <= 0 ? '#ff6b81' : '#dae2fd', fontWeight: 700 }}>
+                이번 달 남은 리포트 생성: {Math.max(0, user.queriesRemaining)} / {PLAN_QUOTA_CAP[user.plan]}회
+              </div>
+            )}
             {user.plan === 'free' && (
               <button
                 onClick={() => onOpenCheckout('pro')}

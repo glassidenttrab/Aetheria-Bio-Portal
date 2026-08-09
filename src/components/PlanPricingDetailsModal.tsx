@@ -333,7 +333,7 @@ export const PlanPricingDetailsModal: React.FC<PlanPricingDetailsModalProps> = (
                     </li>
                     <li style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', color: '#fff', fontWeight: 700, lineHeight: '1.3', wordBreak: 'break-word' }}>
                       <CheckCircle2 size={15} color="#ffd700" style={{ flexShrink: 0, marginTop: '2px' }} />
-                      <span>{t('pmodal.ent_f1', '월 500회 38+ 사이언스 스킬 파이프라인')}</span>
+                      <span>{t('pmodal.ent_f1', '월 500회 AI 자동 분석 파이프라인 리포트 생성')}</span>
                     </li>
                     <li style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', color: '#fff', fontWeight: 700, lineHeight: '1.3', wordBreak: 'break-word' }}>
                       <CheckCircle2 size={15} color="#ffd700" style={{ flexShrink: 0, marginTop: '2px' }} />

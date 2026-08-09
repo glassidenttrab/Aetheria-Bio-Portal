@@ -17,6 +17,7 @@ import {
 
 import { useAuth } from './contexts/AuthContext';
 import { fetchUserProfileDB, upsertUserProfileDB, recordSubscriptionDB } from './services/supabaseService';
+import { PLAN_QUOTA_CAP } from './utils/quota';
 
 const AppInner: React.FC = () => {
   const { language, setLanguage, t, supportedLanguages, currentLanguageObj } = useLanguage();
@@ -125,7 +126,7 @@ const AppInner: React.FC = () => {
   };
 
   const handlePaymentSuccess = (newPlan: UserPlanTier, receipt: PaymentReceipt) => {
-    const remaining = newPlan === 'enterprise' ? 99999 : newPlan === 'pro' ? 100 : 3;
+    const remaining = PLAN_QUOTA_CAP[newPlan];
     setUser((prev) => ({
       ...prev,
       plan: newPlan,
@@ -420,6 +421,7 @@ const AppInner: React.FC = () => {
               onSelectCategory={setActiveCategory}
               onOpenCheckout={handleOpenCheckout}
               onOpenPlanDetails={() => setIsPlanDetailsOpen(true)}
+              onUpdateUser={handleUpdateUser}
             />
           )}
           

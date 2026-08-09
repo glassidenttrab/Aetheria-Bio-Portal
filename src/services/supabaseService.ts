@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { UserProfile, UserPlanTier } from '../types';
+import { PLAN_QUOTA_CAP } from '../utils/quota';
 
 export interface SkillAuditLogItem {
   id?: string;
@@ -148,7 +149,7 @@ export async function recordSubscriptionDB(sub: {
 }): Promise<boolean> {
   try {
     // Update user plan in DB
-    await upsertUserProfileDB({ email: sub.email, plan: sub.tier, queriesRemaining: sub.tier === 'enterprise' ? 99999 : sub.tier === 'pro' ? 100 : 3 });
+    await upsertUserProfileDB({ email: sub.email, plan: sub.tier, queriesRemaining: PLAN_QUOTA_CAP[sub.tier] });
 
     // Insert Subscription record
     const { error } = await supabase

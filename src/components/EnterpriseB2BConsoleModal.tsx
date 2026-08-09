@@ -78,7 +78,7 @@ export const EnterpriseB2BConsoleModal: React.FC<EnterpriseB2BConsoleModalProps>
             { gene: 'MAPT', protein: 'Tau', plddt: 94.8, chemblAffinity: '4.2 nM', ftoRisk: 'Clear (High FTO)' },
             { gene: 'BACE1', protein: 'Beta-Secretase', plddt: 96.2, chemblAffinity: '8.1 nM', ftoRisk: 'Clear (High FTO)' }
           ],
-          pipelineReportQuotaRemaining: 'Unlimited (99,999+)'
+          pipelineReportQuotaRemaining: '월 500회 한도 (500 Quotas/Mo)'
         }, null, 2));
       } else if (selectedEndpoint === 'alphafold') {
         setApiResponse(JSON.stringify({
@@ -308,7 +308,7 @@ export const EnterpriseB2BConsoleModal: React.FC<EnterpriseB2BConsoleModalProps>
                       <Key size={18} /> Enterprise Live API Key
                     </h4>
                     <span style={{ fontSize: '0.72rem', background: 'rgba(78, 222, 163, 0.2)', color: '#4edea3', padding: '3px 8px', borderRadius: '6px', fontWeight: 800, border: '1px solid #4edea3' }}>
-                      ACTIVE (무제한)
+                      ACTIVE (월 500회 한도)
                     </span>
                   </div>
 
@@ -340,8 +340,8 @@ export const EnterpriseB2BConsoleModal: React.FC<EnterpriseB2BConsoleModalProps>
 
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.8rem' }}>
                     <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px' }}>
-                      <span style={{ color: '#bcc9cd' }}>일일 API 쿼리 한도:</span>
-                      <span style={{ color: '#ffd700', fontWeight: 900 }}>무제한 (Unlimited)</span>
+                      <span style={{ color: '#bcc9cd' }}>월간 API 쿼리 한도:</span>
+                      <span style={{ color: '#ffd700', fontWeight: 900 }}>월 500회 (Month 500 Quotas)</span>
                     </li>
                     <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px' }}>
                       <span style={{ color: '#bcc9cd' }}>LIMS / ELN 시스템 연동 지원:</span>
@@ -349,7 +349,7 @@ export const EnterpriseB2BConsoleModal: React.FC<EnterpriseB2BConsoleModalProps>
                     </li>
                     <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px' }}>
                       <span style={{ color: '#bcc9cd' }}>FTO 특허 & 감사 보고서 생성:</span>
-                      <span style={{ color: '#4cd7f6', fontWeight: 800 }}>원클릭 무제한 PDF 출력</span>
+                      <span style={{ color: '#4cd7f6', fontWeight: 800 }}>원클릭 PDF 출력 (월 500회)</span>
                     </li>
                   </ul>
                 </div>

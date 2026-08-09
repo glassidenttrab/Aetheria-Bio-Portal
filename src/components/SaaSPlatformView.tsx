@@ -54,9 +54,8 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
     }
   });
 
-  // 로그인/플랜 변경 시 일/월 주기가 넘어갔으면 남은 횟수를 플랜 한도로 리셋해서 화면에 즉시 반영
+  // 로그인/플랜 변경 시 일(Free)/월(Pro,Enterprise) 주기가 넘어갔으면 남은 횟수를 플랜 한도로 리셋해서 화면에 즉시 반영
   useEffect(() => {
-    if (user.plan === 'free' || !user.email) return;
     const { queriesRemaining, didReset } = resolveQuota(user.email, user.plan, user.queriesRemaining);
     if (didReset) {
       onUpdateUser({ queriesRemaining });
@@ -118,22 +117,24 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
   });
 
   const handleRunAnalysis = async (targetKeyToRun?: string) => {
-    // 무료 회원 과금 제약: 무료 플랜일 경우 결제 모달 팝업
-    if (user.plan === 'free') {
-      onOpenCheckout('pro');
-      return;
-    }
-
-    // 주기(Pro=월/Enterprise=월)가 바뀌었으면 남은 횟수를 플랜 한도로 리셋
+    // 주기(Free=일 단위 / Pro,Enterprise=월 단위)가 바뀌었으면 남은 횟수를 플랜 한도로 리셋
     const { queriesRemaining, didReset } = resolveQuota(user.email, user.plan, user.queriesRemaining);
     if (didReset) {
       onUpdateUser({ queriesRemaining });
     }
 
-    // 한도 소진 시: 안내 메시지 + Enterprise 업그레이드 유도 후 실행 차단
+    // 한도 소진 시: 플랜별 안내 메시지 + 업그레이드 유도 후 실행 차단
     if (queriesRemaining <= 0) {
       const cap = PLAN_QUOTA_CAP[user.plan];
-      if (user.plan === 'pro') {
+      if (user.plan === 'free') {
+        if (window.confirm(
+          `오늘 무료 체험 한도(일 ${cap}회)를 모두 사용하셨습니다.\n` +
+          `내일 자정 이후 자동으로 초기화되며, Pro 플랜(월 30회)으로 업그레이드하면 지금 바로 계속 이용하실 수 있습니다.\n` +
+          `지금 Pro로 업그레이드하시겠습니까?`
+        )) {
+          onOpenCheckout('pro');
+        }
+      } else if (user.plan === 'pro') {
         if (window.confirm(
           `이번 달 파이프라인 리포트 생성 한도(월 ${cap}회)를 모두 사용하셨습니다.\n` +
           `다음 달 1일에 자동으로 초기화되며, Enterprise 플랜(월 500회)으로 업그레이드하면 즉시 계속 이용하실 수 있습니다.\n` +
@@ -238,11 +239,9 @@ Status: High Freedom to Operate (FTO Clear)
                 <span className="badge badge-purple" style={{ fontSize: '0.95rem', fontWeight: 800 }}>Free Starter Tier</span>
               )}
             </div>
-            {user.plan !== 'free' && (
-              <div style={{ marginTop: '8px', fontSize: '0.8rem', color: user.queriesRemaining <= 0 ? '#ff6b81' : '#dae2fd', fontWeight: 700 }}>
-                이번 달 남은 리포트 생성: {Math.max(0, user.queriesRemaining)} / {PLAN_QUOTA_CAP[user.plan]}회
-              </div>
-            )}
+            <div style={{ marginTop: '8px', fontSize: '0.8rem', color: user.queriesRemaining <= 0 ? '#ff6b81' : '#dae2fd', fontWeight: 700 }}>
+              {user.plan === 'free' ? '오늘' : '이번 달'} 남은 리포트 생성: {Math.max(0, user.queriesRemaining)} / {PLAN_QUOTA_CAP[user.plan]}회
+            </div>
             {user.plan === 'free' && (
               <button
                 onClick={() => onOpenCheckout('pro')}
@@ -395,13 +394,13 @@ Status: High Freedom to Operate (FTO Clear)
                   <button
                     style={{
                       padding: '6px 12px', borderRadius: '8px', border: 'none',
-                      background: isLocked ? 'rgba(208, 188, 255, 0.2)' : isSelected ? '#4cd7f6' : 'rgba(255,255,255,0.1)',
-                      color: isLocked ? '#d0bcff' : isSelected ? '#000' : '#fff',
+                      background: isLocked ? 'rgba(78, 222, 163, 0.2)' : isSelected ? '#4cd7f6' : 'rgba(255,255,255,0.1)',
+                      color: isLocked ? '#4edea3' : isSelected ? '#000' : '#fff',
                       fontWeight: 800, fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px'
                     }}
                   >
                     {isLocked ? (
-                      <> <Lock size={12} /> {t('saas.scan_btn', '스캔 (구독 필요)')} </>
+                      <> <Sparkles size={12} /> {t('saas.scan_trial_btn', '스캔 (무료체험)')} </>
                     ) : isSelected ? (
                       '...'
                     ) : (

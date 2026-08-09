@@ -103,7 +103,10 @@ const AppInner: React.FC = () => {
   const handleUpdateUser = (updated: Partial<UserProfile>) => {
     setUser(prev => {
       const nextUser = { ...prev, ...updated };
-      upsertUserProfileDB({ email: nextUser.email, ...updated });
+      // 비로그인 게스트(빈 이메일)는 DB에 저장하지 않고 로컬 상태만 갱신
+      if (nextUser.email) {
+        upsertUserProfileDB({ email: nextUser.email, ...updated });
+      }
       return nextUser;
     });
   };

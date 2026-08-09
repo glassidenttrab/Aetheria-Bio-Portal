@@ -206,10 +206,6 @@ export const PlanPricingDetailsModal: React.FC<PlanPricingDetailsModalProps> = (
                       <CheckCircle2 size={15} color="#4edea3" style={{ flexShrink: 0, marginTop: '2px' }} />
                       <span>{t('pmodal.free_f3', 'PubMed 논문 3,500만 건 기본 검색')}</span>
                     </li>
-                    <li style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', color: '#8899a6', lineHeight: '1.3', wordBreak: 'break-word' }}>
-                      <X size={15} color="#8899a6" style={{ flexShrink: 0, marginTop: '2px' }} />
-                      <span style={{ textDecoration: 'line-through' }}>{t('pmodal.free_f4', 'Pro/Enterprise 정밀 AI 파이프라인 미제공')}</span>
-                    </li>
                   </ul>
                 </div>
 

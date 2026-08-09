@@ -4,6 +4,7 @@ import { PayPalSaaSProduct } from '../../lib/paypal';
 
 interface PayPalCheckoutButtonProps {
   product: PayPalSaaSProduct;
+  overridePrice?: number | string;
   onSuccess: (details: any) => void;
   onError?: (error: any) => void;
   onCancel?: () => void;
@@ -11,10 +12,13 @@ interface PayPalCheckoutButtonProps {
 
 export const PayPalCheckoutButton: React.FC<PayPalCheckoutButtonProps> = ({
   product,
+  overridePrice,
   onSuccess,
   onError,
   onCancel,
 }) => {
+  const finalPriceValue = overridePrice !== undefined ? String(overridePrice) : product.price;
+
   return (
     <div style={{ width: '100%' }}>
       <div style={{
@@ -50,7 +54,7 @@ export const PayPalCheckoutButton: React.FC<PayPalCheckoutButtonProps> = ({
                 custom_id: product.id,
                 amount: {
                   currency_code: product.currency,
-                  value: product.price,
+                  value: finalPriceValue,
                 },
               },
             ],

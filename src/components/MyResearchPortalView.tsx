@@ -212,6 +212,14 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                 <Zap size={16} /> Pro ($490) 업그레이드
               </button>
             )}
+            {user.plan === 'pro' && (
+              <button
+                onClick={() => onOpenCheckout('enterprise')}
+                style={{ padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(255, 215, 0, 0.4)', background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 170, 0, 0.2) 100%)', color: '#ffd700', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Crown size={16} /> Enterprise 업그레이드 (Pro 차액 정산)
+              </button>
+            )}
             <button
               onClick={handleOpenB2BConsole}
               style={{ padding: '10px 20px', borderRadius: '12px', border: user.plan === 'enterprise' ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(255, 215, 0, 0.2)', background: user.plan === 'enterprise' ? 'rgba(255, 215, 0, 0.12)' : 'rgba(255, 215, 0, 0.05)', color: '#ffd700', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}

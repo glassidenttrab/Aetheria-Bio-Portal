@@ -209,6 +209,15 @@ Status: High Freedom to Operate (FTO Clear)
               </button>
             )}
 
+            {user.plan === 'pro' && (
+              <button
+                onClick={() => onOpenCheckout('enterprise')}
+                style={{ width: '100%', marginTop: '10px', padding: '9px 10px', borderRadius: '10px', border: '1px solid rgba(255, 215, 0, 0.4)', background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 170, 0, 0.2) 100%)', color: '#ffd700', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              >
+                <Crown size={14} /> Enterprise 업그레이드 (Pro 차액 정산)
+              </button>
+            )}
+
             <button
               onClick={handleOpenB2BConsole}
               style={{

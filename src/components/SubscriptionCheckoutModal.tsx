@@ -44,12 +44,19 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
     ? SAAS_PAYPAL_PRODUCTS[selectedTier]
     : SAAS_PAYPAL_PRODUCTS.pro;
 
+  // Pro ➔ Enterprise 일할 차액 정산 (Proration) 산출
+  const isProToEnterpriseUpgrade = Boolean(user && user.plan === 'pro' && selectedTier === 'enterprise');
+  const proDaysRemaining = 20; // 30일 주기 중 미사용 잔여 20일 가정
+  const proDailyRate = 490 / 30; // $16.333/일
+  const proUnusedCredit = isProToEnterpriseUpgrade ? Math.round(proDailyRate * proDaysRemaining * 100) / 100 : 0; // $326.67
+  const finalPayablePrice = isProToEnterpriseUpgrade ? Math.round((2500 - proUnusedCredit) * 100) / 100 : currentPriceInfo.price;
+
   // PayPal 승인 성공
   const handlePayPalSuccess = (details: any) => {
     const newReceipt: PaymentReceipt = {
       transactionId: details.id || `PAYPAL-${Date.now()}`,
       planTier: selectedTier,
-      amountUSD: currentPriceInfo.price,
+      amountUSD: finalPayablePrice,
       timestamp: new Date().toLocaleString(),
       cardLast4: 'PAYPAL'
     };
@@ -67,7 +74,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
       const newReceipt: PaymentReceipt = {
         transactionId: `TX-AE-${Math.floor(100000 + Math.random() * 900000)}`,
         planTier: selectedTier,
-        amountUSD: currentPriceInfo.price,
+        amountUSD: finalPayablePrice,
         timestamp: new Date().toLocaleString(),
         cardLast4: '4242'
       };
@@ -180,7 +187,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
               )}
 
               {/* 주문 요약 카드 */}
-              <div style={{ background: 'rgba(23, 31, 51, 0.8)', padding: '16px 20px', borderRadius: '14px', border: '1px solid rgba(76, 215, 246, 0.3)', marginBottom: '22px' }}>
+              <div style={{ background: 'rgba(23, 31, 51, 0.8)', padding: '16px 20px', borderRadius: '14px', border: '1px solid rgba(76, 215, 246, 0.3)', marginBottom: isProToEnterpriseUpgrade ? '14px' : '22px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff' }}>{currentPriceInfo.name}</div>
@@ -192,6 +199,39 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                   </div>
                 </div>
               </div>
+
+              {/* Pro ➔ Enterprise 일할 차액 정산 (Prorated Breakdown) 명세서 카드 */}
+              {isProToEnterpriseUpgrade && (
+                <div style={{
+                  background: 'rgba(255, 215, 0, 0.08)',
+                  border: '1px solid rgba(255, 215, 0, 0.4)',
+                  borderRadius: '14px',
+                  padding: '16px',
+                  marginBottom: '20px'
+                }}>
+                  <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#ffd700', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🧾</span> Pro ➔ Enterprise 업그레이드 차액 정산 명세서 (Prorated)
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.78rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#bcc9cd' }}>
+                      <span>Enterprise VIP 정상 월 구독료:</span>
+                      <span style={{ color: '#fff', fontWeight: 700 }}>$2,500.00</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#4edea3' }}>
+                      <span>기존 Pro 미사용 잔여 20일 공제 (환불 반영):</span>
+                      <span style={{ fontWeight: 800 }}>- ${proUnusedCredit.toFixed(2)}</span>
+                    </div>
+                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontWeight: 900, color: '#ffd700' }}>
+                      <span>💳 오늘 실결제 차액 금액:</span>
+                      <span>${finalPayablePrice.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#8899a6', marginTop: '8px', lineHeight: '1.35' }}>
+                    * 이중 결제가 발생하지 않도록 기존 Pro 구독의 미사용 남은 기간 가치가 정확히 일할 계산(Proration)되어 차감 승인됩니다.
+                  </div>
+                </div>
+              )}
 
               {/* 결제 수단 선택 */}
               <div style={{ marginBottom: '20px' }}>
@@ -233,6 +273,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                 <div style={{ marginTop: '16px' }}>
                   <PayPalCheckoutButton
                     product={paypalProduct}
+                    overridePrice={isProToEnterpriseUpgrade ? finalPayablePrice : undefined}
                     onSuccess={handlePayPalSuccess}
                     onError={(err) => alert('PayPal 결제 실패: ' + err)}
                   />
@@ -261,7 +302,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                       cursor: isProcessing ? 'wait' : 'pointer', boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)'
                     }}
                   >
-                    {isProcessing ? t('checkout.btn_processing', '결제 승인 중...') : `$${currentPriceInfo.price} ${t('checkout.btn_submit', '구독 승인 및 결제')}`}
+                    {isProcessing ? t('checkout.btn_processing', '결제 승인 중...') : `$${finalPayablePrice.toFixed(2)} ${t('checkout.btn_submit', '구독 승인 및 결제')}`}
                   </button>
                 </form>
               )}

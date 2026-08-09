@@ -29,6 +29,22 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
   const [dbAuditLogs, setDbAuditLogs] = useState<SkillAuditLogItem[]>([]);
   const [dbSubscriptions, setDbSubscriptions] = useState<SubscriptionItem[]>([]);
 
+  const handleOpenB2BConsole = () => {
+    const isLoggedInUser = Boolean(user && user.id && user.id !== 'guest' && user.id !== 'guest_user');
+    if (!isLoggedInUser) {
+      alert('Enterprise B2B 콘솔은 로그인 후 Enterprise 구독 시 이용 가능합니다. 결제/로그인 안내 페이지로 이동합니다.');
+      onOpenCheckout('enterprise');
+      return;
+    }
+    if (user.plan !== 'enterprise') {
+      if (window.confirm('Enterprise B2B 콘솔은 Enterprise ($1,990/월) 구독 전용 서비스입니다.\nEnterprise 플랜 구독 결제 페이지로 이동하시겠습니까?')) {
+        onOpenCheckout('enterprise');
+      }
+      return;
+    }
+    setIsB2BConsoleOpen(true);
+  };
+
   // User Edit State
   const [nameInput, setNameInput] = useState(user.name);
   const [institutionInput, setInstitutionInput] = useState(user.institution || '');
@@ -196,14 +212,12 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                 <Zap size={16} /> Pro ($490) 업그레이드
               </button>
             )}
-            {user.plan === 'enterprise' && (
-              <button
-                onClick={() => setIsB2BConsoleOpen(true)}
-                style={{ padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(255, 215, 0, 0.4)', background: 'rgba(255, 215, 0, 0.12)', color: '#ffd700', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Building2 size={16} /> Enterprise B2B 콘솔
-              </button>
-            )}
+            <button
+              onClick={handleOpenB2BConsole}
+              style={{ padding: '10px 20px', borderRadius: '12px', border: user.plan === 'enterprise' ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(255, 215, 0, 0.2)', background: user.plan === 'enterprise' ? 'rgba(255, 215, 0, 0.12)' : 'rgba(255, 215, 0, 0.05)', color: '#ffd700', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Building2 size={16} /> {user.plan === 'enterprise' ? 'Enterprise B2B 콘솔' : 'Enterprise B2B 콘솔 신청 ($1,990)'}
+            </button>
           </div>
         </div>
 
@@ -474,20 +488,18 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
               </div>
             </div>
 
-            {user.plan === 'enterprise' && (
-              <div style={{ padding: '24px', borderRadius: '18px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(255, 215, 0, 0.35)' }}>
-                <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>Enterprise B2B 전용 콘솔 Center</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffd700', margin: '8px 0' }}>
-                  API Key 발급 · 개발자 콘솔 · FTO 감사
-                </div>
-                <button
-                  onClick={() => setIsB2BConsoleOpen(true)}
-                  style={{ width: '100%', marginTop: '4px', padding: '10px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #ffd700 0%, #ffaa00 100%)', color: '#000', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                >
-                  <Building2 size={16} /> Enterprise B2B 콘솔 열기
-                </button>
+            <div style={{ padding: '24px', borderRadius: '18px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(255, 215, 0, 0.35)' }}>
+              <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>Enterprise B2B 전용 콘솔 Center</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffd700', margin: '8px 0' }}>
+                API Key 발급 · 개발자 콘솔 · FTO 감사
               </div>
-            )}
+              <button
+                onClick={handleOpenB2BConsole}
+                style={{ width: '100%', marginTop: '4px', padding: '10px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #ffd700 0%, #ffaa00 100%)', color: '#000', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              >
+                <Building2 size={16} /> {user.plan === 'enterprise' ? 'Enterprise B2B 콘솔 열기' : 'Enterprise B2B 콘솔 신청 & 결제'}
+              </button>
+            </div>
           </div>
 
           <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff', marginBottom: '12px' }}>

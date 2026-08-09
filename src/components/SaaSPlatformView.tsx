@@ -51,6 +51,22 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
     }
   });
 
+  const handleOpenB2BConsole = () => {
+    const isLoggedIn = Boolean(user && user.id && user.id !== 'guest' && user.id !== 'guest_user');
+    if (!isLoggedIn) {
+      alert('Enterprise B2B 콘솔은 로그인 후 Enterprise 구독 시 이용 가능합니다. 결제/로그인 안내 페이지로 이동합니다.');
+      onOpenCheckout('enterprise');
+      return;
+    }
+    if (user.plan !== 'enterprise') {
+      if (window.confirm('Enterprise B2B 콘솔은 Enterprise ($1,990/월) 구독 전용 서비스입니다.\nEnterprise 플랜 구독 결제 페이지로 이동하시겠습니까?')) {
+        onOpenCheckout('enterprise');
+      }
+      return;
+    }
+    setIsB2BConsoleOpen(true);
+  };
+
   const toggleSaveVault = (targetKey: string) => {
     setSavedVaultTargets(prev => {
       const next = prev.includes(targetKey) ? prev.filter(k => k !== targetKey) : [...prev, targetKey];
@@ -194,10 +210,17 @@ Status: High Freedom to Operate (FTO Clear)
             )}
 
             <button
-              onClick={() => setIsB2BConsoleOpen(true)}
-              style={{ width: '100%', marginTop: '8px', padding: '7px 12px', borderRadius: '8px', border: '1px solid rgba(255, 215, 0, 0.4)', background: 'rgba(255, 215, 0, 0.12)', color: '#ffd700', fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              onClick={handleOpenB2BConsole}
+              style={{
+                width: '100%', marginTop: '8px', padding: '7px 12px', borderRadius: '8px',
+                border: user.plan === 'enterprise' ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(255,255,255,0.2)',
+                background: user.plan === 'enterprise' ? 'rgba(255, 215, 0, 0.12)' : 'rgba(255,255,255,0.05)',
+                color: user.plan === 'enterprise' ? '#ffd700' : '#bcc9cd',
+                fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+              }}
             >
-              <Building2 size={13} /> Enterprise B2B 콘솔
+              <Building2 size={13} /> Enterprise B2B 콘솔 {user.plan !== 'enterprise' && <Lock size={12} style={{ marginLeft: '2px', opacity: 0.8 }} />}
             </button>
           </div>
         </div>

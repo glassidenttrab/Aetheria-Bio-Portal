@@ -117,14 +117,15 @@ export const EnterpriseB2BConsoleModal: React.FC<EnterpriseB2BConsoleModalProps>
     <div style={{
       position: 'fixed', inset: 0, zIndex: 220,
       background: 'rgba(5, 10, 20, 0.94)', backdropFilter: 'blur(20px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
+      display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '32px 16px',
       overflowY: 'auto'
     }}>
       <div style={{
-        width: '100%', maxWidth: '1240px', maxHeight: '94vh', background: '#0b1326',
+        width: '100%', maxWidth: '1240px', maxHeight: '92vh', background: '#0b1326',
         border: '1px solid rgba(255, 215, 0, 0.5)', borderRadius: '24px',
         boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 50px rgba(255, 215, 0, 0.2)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden', color: '#dae2fd'
+        display: 'flex', flexDirection: 'column', overflow: 'hidden', color: '#dae2fd',
+        margin: 'auto 0'
       }}>
 
         {/* Modal Top Header */}

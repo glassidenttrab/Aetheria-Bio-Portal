@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as $3Dmol from '3dmol';
-import { X, RotateCw, ZoomIn, ZoomOut, Box, Eye, Database, Search, Loader2, AlertTriangle } from 'lucide-react';
+import { X, RotateCw, ZoomIn, ZoomOut, Box, Eye, Tag, Database, Search, Loader2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { fetchAlphaFoldPrediction, fetchAlphaFoldPdbText, AlphaFoldPrediction, AlphaFoldNotFoundError } from '../services/alphafoldService';
 
@@ -22,6 +22,7 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
   const { t } = useLanguage();
   const [activeStyle, setActiveStyle] = useState<'ribbon' | 'sticks' | 'spheres'>('ribbon');
   const [showSurface, setShowSurface] = useState(false);
+  const [showLabels, setShowLabels] = useState(false);
   const [customQuery, setCustomQuery] = useState('');
   const [currentUniprotId, setCurrentUniprotId] = useState(uniprotId);
   const [currentProtein, setCurrentProtein] = useState(proteinName);
@@ -59,7 +60,7 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
         if (cancelled) return;
 
         viewer.addModel(pdbText, 'pdb');
-        applyStyle(viewer, activeStyle, showSurface);
+        applyStyle(viewer, activeStyle, showSurface, showLabels);
         viewer.zoomTo();
         viewer.render();
         if (isAutoRotate) viewer.spin('y', 1);
@@ -85,13 +86,13 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, currentUniprotId]);
 
-  // 표현 양식 / 표면 토글 변경 시 이미 로드된 모델에 실시간 재적용
+  // 표현 양식 / 표면 / 라벨 토글 변경 시 이미 로드된 모델에 실시간 재적용
   useEffect(() => {
     const viewer = viewerRef.current;
     if (!viewer || isLoading || error) return;
-    applyStyle(viewer, activeStyle, showSurface);
+    applyStyle(viewer, activeStyle, showSurface, showLabels);
     viewer.render();
-  }, [activeStyle, showSurface]);
+  }, [activeStyle, showSurface, showLabels]);
 
   // 자동 회전 토글
   useEffect(() => {
@@ -101,7 +102,7 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
     else viewer.spin(false);
   }, [isAutoRotate, isLoading, error]);
 
-  function applyStyle(viewer: any, style: 'ribbon' | 'sticks' | 'spheres', surface: boolean) {
+  function applyStyle(viewer: any, style: 'ribbon' | 'sticks' | 'spheres', surface: boolean, labels: boolean) {
     viewer.setStyle({}, {});
     if (style === 'ribbon') {
       // AlphaFold DB 공식 컬러 컨벤션: B-factor 컬럼에 저장된 pLDDT 값을 신뢰도 색상으로 매핑
@@ -114,6 +115,14 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
     viewer.removeAllSurfaces();
     if (surface) {
       viewer.addSurface($3Dmol.SurfaceType.VDW, { opacity: 0.35, color: 'cyan' });
+    }
+    viewer.removeAllLabels();
+    if (labels) {
+      // 잔기(residue)별 라벨. 물 분자 등 heteroatom은 제외
+      viewer.addResLabels(
+        { hetflag: false },
+        { font: 'Arial', fontSize: 11, fontColor: '#4cd7f6', showBackground: true, backgroundColor: '#0b1329', backgroundOpacity: 0.6, screenOffset: { x: 0, y: 0 } }
+      );
     }
   }
 
@@ -225,6 +234,20 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
               }}
             >
               <Eye size={14} /> {t('viewer.surface', '표면')}
+            </button>
+
+            <button
+              onClick={() => setShowLabels(!showLabels)}
+              style={{
+                padding: '6px 14px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                border: showLabels ? '1px solid rgba(76, 215, 246, 0.6)' : '1px solid rgba(255,255,255,0.1)',
+                background: showLabels ? 'rgba(76, 215, 246, 0.2)' : 'transparent',
+                color: showLabels ? '#4cd7f6' : '#8899a6'
+              }}
+              title="잔기(residue) 라벨 표시 — 서열이 긴 단백질은 라벨이 밀집될 수 있습니다"
+            >
+              <Tag size={14} /> {t('viewer.labels', '라벨')}
             </button>
           </div>
 

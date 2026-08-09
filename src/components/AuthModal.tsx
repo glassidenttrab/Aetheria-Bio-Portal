@@ -8,15 +8,13 @@ interface AuthModalProps {
   onClose: () => void;
   initialTab?: 'login' | 'signup';
   onSuccess?: () => void;
-  onLoginSuccess?: (userObj: any) => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
   initialTab = 'login',
-  onSuccess,
-  onLoginSuccess
+  onSuccess
 }) => {
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const { t } = useLanguage();
@@ -43,20 +41,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         await signInWithEmail(email, password);
       }
 
-      const userData = {
-        id: 'usr_' + Date.now(),
-        name: name || email.split('@')[0] || '연구자 (Researcher)',
-        email: email,
-        plan: 'free' as const,
-        institution: 'Aetheria Bio Partner Institute',
-        title: '책임연구원',
-        queriesRemaining: 3
-      };
-
-      if (onLoginSuccess) {
-        onLoginSuccess(userData);
-      }
-
+      // 프로필 동기화는 App.tsx의 syncDbUser 이펙트가 실제 Supabase 세션 변경을
+      // 감지해서 처리한다 (기존 DB 프로필을 정확히 불러오거나, 진짜 신규 가입자일
+      // 때만 새 프로필을 만듦). 여기서 plan 등을 하드코딩한 가짜 프로필로 다시
+      // 덮어쓰면 기존 유료 회원이 로그인할 때마다 plan이 free로 리셋되는 사고가 난다.
       setIsSuccess(true);
       setTimeout(() => {
         setIsSuccess(false);

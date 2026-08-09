@@ -26,30 +26,35 @@ export interface ApiKeyItem {
 
 /**
  * 1. Fetch User Profile from Supabase DB
+ *
+ * 진짜로 프로필이 없는 경우(PGRST116: 0 rows)에만 null을 반환한다.
+ * 그 외의 오류(네트워크, RLS 권한 거부 등)는 그대로 throw해서, 호출부가
+ * "신규 가입자"로 오판해 기존 프로필을 빈 값으로 덮어쓰는 사고를 방지한다.
  */
 export async function fetchUserProfileDB(email: string): Promise<UserProfile | null> {
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .single();
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email)
+    .single();
 
-    if (error || !data) return null;
-
-    return {
-      id: data.id,
-      name: data.name,
-      email: data.email,
-      plan: data.plan as UserPlanTier,
-      institution: data.institution,
-      title: data.title,
-      queriesRemaining: data.queries_remaining,
-    };
-  } catch (err) {
-    console.warn('Supabase DB fetch notice:', err);
-    return null;
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null; // 실제로 해당 이메일의 행이 없는 경우
+    }
+    throw error; // 네트워크/권한 등 다른 오류는 호출부가 처리하도록 전파
   }
+  if (!data) return null;
+
+  return {
+    id: data.id,
+    name: data.name,
+    email: data.email,
+    plan: data.plan as UserPlanTier,
+    institution: data.institution,
+    title: data.title,
+    queriesRemaining: data.queries_remaining,
+  };
 }
 
 /**

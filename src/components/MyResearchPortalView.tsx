@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { EnterpriseB2BConsoleModal } from './EnterpriseB2BConsoleModal';
 import { fetchSkillAuditLogsDB, upsertUserProfileDB, SkillAuditLogItem, fetchSubscriptionsDB, SubscriptionItem } from '../services/supabaseService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface MyResearchPortalViewProps {
   user: UserProfile;
@@ -23,6 +24,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
   onOpenAuth
 }) => {
   const { t } = useLanguage();
+  const { user: authUser } = useAuth();
   const isLoggedIn = user && user.id !== 'guest';
   const [activeTab, setActiveTab] = useState<'profile' | 'vault' | 'history' | 'billing'>('profile');
   const [isB2BConsoleOpen, setIsB2BConsoleOpen] = useState(false);
@@ -115,7 +117,8 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
       institution: institutionInput,
       title: titleInput,
       plan: user.plan,
-      queriesRemaining: user.queriesRemaining
+      queriesRemaining: user.queriesRemaining,
+      authUid: authUser?.id
     });
 
     setIsSavedSuccess(true);

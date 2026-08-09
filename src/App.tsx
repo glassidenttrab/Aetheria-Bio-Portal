@@ -59,22 +59,29 @@ const AppInner: React.FC = () => {
   useEffect(() => {
     const syncDbUser = async () => {
       if (authUser && authUser.email) {
-        const dbProfile = await fetchUserProfileDB(authUser.email);
-        if (dbProfile) {
-          setUser(dbProfile);
-        } else {
-          const defaultName = authUser.user_metadata?.full_name || authUser.email.split('@')[0] || '';
-          const newProfile: UserProfile = {
-            id: authUser.id,
-            name: defaultName,
-            email: authUser.email,
-            plan: 'free',
-            institution: '',
-            title: '',
-            queriesRemaining: 3
-          };
-          setUser(newProfile);
-          await upsertUserProfileDB({ ...newProfile, authUid: authUser.id });
+        try {
+          const dbProfile = await fetchUserProfileDB(authUser.email);
+          if (dbProfile) {
+            setUser(dbProfile);
+          } else {
+            const defaultName = authUser.user_metadata?.full_name || authUser.email.split('@')[0] || '';
+            const newProfile: UserProfile = {
+              id: authUser.id,
+              name: defaultName,
+              email: authUser.email,
+              plan: 'free',
+              institution: '',
+              title: '',
+              queriesRemaining: 3
+            };
+            setUser(newProfile);
+            await upsertUserProfileDB({ ...newProfile, authUid: authUser.id });
+          }
+        } catch (err) {
+          // 네트워크/권한 등의 오류로 조회가 실패한 경우, 신규 가입자로 오판해
+          // 기존 프로필을 빈 값으로 덮어쓰지 않는다. 로컬 상태는 그대로 두고 다음
+          // authUser 변경(재시도) 시 다시 동기화되도록 한다.
+          console.error('사용자 프로필 동기화 실패 (기존 데이터 보존):', err);
         }
       } else {
         // 로그아웃 시 게스트 상태로 초기화
@@ -117,7 +124,7 @@ const AppInner: React.FC = () => {
       const nextUser = { ...prev, ...updated };
       // 비로그인 게스트(빈 이메일)는 DB에 저장하지 않고 로컬 상태만 갱신
       if (nextUser.email) {
-        upsertUserProfileDB({ email: nextUser.email, ...updated });
+        upsertUserProfileDB({ email: nextUser.email, ...updated, authUid: authUser?.id });
       }
       return nextUser;
     });

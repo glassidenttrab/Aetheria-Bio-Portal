@@ -995,6 +995,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'plan.enterprise_title': 'Enterprise Solopreneur VIP',
     'plan.enterprise_desc': '無制限 38+ サイエンススキルパイプライン＆B2B監査レポート',
     'plan.per_month': '/月',
+    'pmodal.annual_suffix': '(年間契約)',
 
     // Science Skills Info
     'skills.banner_title': '38+サイエンススキル＆世界中のライブビッグデータ連携',
@@ -1396,6 +1397,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'plan.enterprise_title': 'Enterprise Solopreneur VIP',
     'plan.enterprise_desc': '无限制 38+ 科学技能流水线 & B2B 审计报告',
     'plan.per_month': '/月',
+    'pmodal.annual_suffix': '(年付)',
 
     // Science Skills Info
     'skills.banner_title': '38+ 科学技能与全球实时大数据集成',
@@ -1784,6 +1786,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'plan.enterprise_title': 'Enterprise Solopreneur VIP',
     'plan.enterprise_desc': 'Pipeline Ilimitado de 38+ Habilidades e Informe B2B',
     'plan.per_month': '/mes',
+    'pmodal.annual_suffix': '(Anual)',
 
     // Science Skills Info
     'skills.banner_title': '38+ Habilidades Científicas e Integración de Big Data Global',
@@ -2172,6 +2175,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'plan.enterprise_title': 'Enterprise Solopreneur VIP',
     'plan.enterprise_desc': 'Unbegrenzte 38+ Wissenschaftsskills Pipeline & B2B-Prüfbericht',
     'plan.per_month': '/Monat',
+    'pmodal.annual_suffix': '(Jährlich)',
 
     // Science Skills Info
     'skills.banner_title': '38+ Wissenschaftsskills & Globale Big-Data-Integration',
@@ -2560,6 +2564,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'plan.enterprise_title': 'Enterprise Solopreneur VIP',
     'plan.enterprise_desc': 'Pipeline Illimitata 38+ Competenze e Report B2B',
     'plan.per_month': '/mese',
+    'pmodal.annual_suffix': '(Annuale)',
 
     // Science Skills Info
     'skills.banner_title': '38+ Competenze Scientifiche e Integrazione Big Data Globale',
@@ -2948,6 +2953,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'plan.enterprise_title': 'Enterprise Solopreneur VIP',
     'plan.enterprise_desc': 'Pipeline Illimité 38+ Compétences et Rapport d\'Audit B2B',
     'plan.per_month': '/mois',
+    'pmodal.annual_suffix': '(Annuel)',
 
     // Science Skills Info
     'skills.banner_title': '38+ Compétences Scientifiques et Intégration Big Data Mondiale',

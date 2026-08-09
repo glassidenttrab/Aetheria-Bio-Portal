@@ -8,6 +8,7 @@ import { ScienceSkillsCatalogModal } from './ScienceSkillsCatalogModal';
 import { EnterpriseB2BConsoleModal } from './EnterpriseB2BConsoleModal';
 import { useLanguage } from '../contexts/LanguageContext';
 import { PLAN_QUOTA_CAP, resolveQuota } from '../utils/quota';
+import { fetchTargetVaultDB, addTargetVaultItemDB, removeTargetVaultItemDB } from '../services/supabaseService';
 import {
   Brain, Bone, Smile, Stethoscope, Clock, Sparkles, Search, Dna, Download, ShieldCheck, CheckCircle, Zap,
   ExternalLink, KeyRound, ArrowRight, Activity, FlaskConical, Layers, Crown, Lock, Eye, ChevronRight, Filter, Info, HeartPulse,
@@ -45,15 +46,18 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
   const [isSkillCatalogOpen, setIsSkillCatalogOpen] = useState<boolean>(false);
   const [isB2BConsoleOpen, setIsB2BConsoleOpen] = useState<boolean>(false);
 
-  // Saved Target Vault State (Bookmark)
-  const [savedVaultTargets, setSavedVaultTargets] = useState<string[]>(() => {
-    try {
-      const stored = localStorage.getItem('aetheria_target_vault');
-      return stored ? JSON.parse(stored) : ['TAU', 'PCSK9'];
-    } catch {
-      return ['TAU', 'PCSK9'];
+  // Saved Target Vault State (Bookmark) — Supabase DB 기반, 계정별로 동기화
+  const [savedVaultTargets, setSavedVaultTargets] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (user.id === 'guest') {
+      setSavedVaultTargets([]);
+      return;
     }
-  });
+    fetchTargetVaultDB().then(items => {
+      setSavedVaultTargets(items.map(item => item.target_key));
+    });
+  }, [user.id]);
 
   // 로그인/플랜 변경 시 일(Free)/월(Pro,Enterprise) 주기가 넘어갔으면 남은 횟수를 플랜 한도로 리셋해서 화면에 즉시 반영
   useEffect(() => {
@@ -80,14 +84,18 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
     setIsB2BConsoleOpen(true);
   };
 
-  const toggleSaveVault = (targetKey: string) => {
-    setSavedVaultTargets(prev => {
-      const next = prev.includes(targetKey) ? prev.filter(k => k !== targetKey) : [...prev, targetKey];
-      try {
-        localStorage.setItem('aetheria_target_vault', JSON.stringify(next));
-      } catch (e) { console.error(e); }
-      return next;
-    });
+  const toggleSaveVault = async (targetKey: string) => {
+    if (user.id === 'guest') {
+      onOpenCheckout('pro');
+      return;
+    }
+    const isSaved = savedVaultTargets.includes(targetKey);
+    setSavedVaultTargets(prev => (isSaved ? prev.filter(k => k !== targetKey) : [...prev, targetKey]));
+    if (isSaved) {
+      await removeTargetVaultItemDB(user.id, targetKey);
+    } else {
+      await addTargetVaultItemDB(user.id, targetKey);
+    }
   };
 
   const handleOpen3DViewer = (pdbId?: string, proteinName?: string, uniprotId?: string) => {
@@ -341,7 +349,7 @@ Status: High Freedom to Operate (FTO Clear)
             display: 'flex', alignItems: 'center', gap: '8px'
           }}>
             <Star size={18} />
-            <span>{t('vault.title', '관심 표적 보관함')}: {savedVaultTargets.length}개</span>
+            <span>{t('vault.title', '관심 표적 보관함')}: {savedVaultTargets.length}{t('vault.count_suffix', '개')}</span>
           </div>
         </div>
 
@@ -433,6 +441,20 @@ Status: High Freedom to Operate (FTO Clear)
             </div>
 
             <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => toggleSaveVault(selectedTargetKey)}
+                style={{
+                  padding: '10px 18px', borderRadius: '10px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 800,
+                  border: savedVaultTargets.includes(selectedTargetKey) ? '1px solid rgba(255, 215, 0, 0.6)' : '1px solid rgba(255,255,255,0.15)',
+                  background: savedVaultTargets.includes(selectedTargetKey) ? 'rgba(255, 215, 0, 0.15)' : 'rgba(23, 31, 51, 0.8)',
+                  color: savedVaultTargets.includes(selectedTargetKey) ? '#ffd700' : '#8899a6',
+                  display: 'flex', alignItems: 'center', gap: '6px'
+                }}
+              >
+                <Star size={14} fill={savedVaultTargets.includes(selectedTargetKey) ? '#ffd700' : 'none'} />
+                {savedVaultTargets.includes(selectedTargetKey) ? t('vault.saved_btn', '보관함에 저장됨') : t('vault.save_btn', '관심 타깃 저장')}
+              </button>
+
               <a
                 href={`https://www.uniprot.org/uniprotkb/${analysisResult.uniprotId}`}
                 target="_blank"

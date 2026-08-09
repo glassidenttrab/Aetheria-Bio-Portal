@@ -5,7 +5,10 @@ import {
   User, ShieldCheck, Crown, Zap, Mail, Building, Building2, Award, Star, Trash2, ArrowRight, Clock, KeyRound, Save, Check, RefreshCw
 } from 'lucide-react';
 import { EnterpriseB2BConsoleModal } from './EnterpriseB2BConsoleModal';
-import { fetchSkillAuditLogsDB, upsertUserProfileDB, SkillAuditLogItem, fetchSubscriptionsDB, SubscriptionItem } from '../services/supabaseService';
+import {
+  fetchSkillAuditLogsDB, upsertUserProfileDB, SkillAuditLogItem, fetchSubscriptionsDB, SubscriptionItem,
+  fetchTargetVaultDB, removeTargetVaultItemDB, TargetVaultItem
+} from '../services/supabaseService';
 import { useAuth } from '../contexts/AuthContext';
 
 interface MyResearchPortalViewProps {
@@ -15,6 +18,20 @@ interface MyResearchPortalViewProps {
   onOpenCheckout: (tier: UserPlanTier) => void;
   onOpenAuth?: () => void;
 }
+
+const VAULT_DETAIL_MAP: Record<string, { name: string; symbol: string; dept: string; deptKey: SaasCategory }> = {
+  TAU: { name: 'Microtubule-Associated Protein Tau', symbol: 'MAPT', dept: '신경외과', deptKey: 'neurosurgery' },
+  SNCA: { name: 'Alpha-Synuclein Lewy Body Target', symbol: 'SNCA', dept: '신경과', deptKey: 'neurology' },
+  MMP13: { name: 'Matrix Metalloproteinase-13', symbol: 'MMP13', dept: '정형외과', deptKey: 'orthopedics' },
+  HTR2A: { name: '5-Hydroxytryptamine Receptor 2A', symbol: 'HTR2A', dept: '정신건강의학과', deptKey: 'psychiatry' },
+  PCSK9: { name: 'Proprotein Convertase Subtilisin 9', symbol: 'PCSK9', dept: '순환기내과', deptKey: 'cardiology' },
+  PDL1: { name: 'Programmed Death-Ligand 1', symbol: 'CD274', dept: '종양내과', deptKey: 'oncology' },
+  GLP1R: { name: 'GLP-1 Receptor Metabolic Target', symbol: 'GLP1R', dept: '내분비내과', deptKey: 'endocrinology' },
+  TNF: { name: 'Tumor Necrosis Factor Alpha', symbol: 'TNF', dept: '류마티스내과', deptKey: 'immunology' },
+  COL1A1: { name: 'Collagen Type I Alpha 1', symbol: 'COL1A1', dept: '피부과', deptKey: 'dermatology' },
+  VEGFA: { name: 'Vascular Endothelial Growth Factor A', symbol: 'VEGFA', dept: '안과', deptKey: 'ophthalmology' },
+  SIRT1: { name: 'Sirtuin 1 Longevity Enzyme', symbol: 'SIRT1', dept: '안티에이징', deptKey: 'longevity' }
+};
 
 export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
   user,
@@ -30,16 +47,17 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
   const [isB2BConsoleOpen, setIsB2BConsoleOpen] = useState(false);
   const [dbAuditLogs, setDbAuditLogs] = useState<SkillAuditLogItem[]>([]);
   const [dbSubscriptions, setDbSubscriptions] = useState<SubscriptionItem[]>([]);
+  const [dbVaultItems, setDbVaultItems] = useState<TargetVaultItem[]>([]);
 
   const handleOpenB2BConsole = () => {
     const isLoggedInUser = Boolean(user && user.id && user.id !== 'guest' && user.id !== 'guest_user');
     if (!isLoggedInUser) {
-      alert('Enterprise B2B 콘솔은 로그인 후 Enterprise 구독 시 이용 가능합니다. 결제/로그인 안내 페이지로 이동합니다.');
+      alert(t('mypage.b2b_login_required', 'Enterprise B2B 콘솔은 로그인 후 Enterprise 구독 시 이용 가능합니다. 결제/로그인 안내 페이지로 이동합니다.'));
       onOpenCheckout('enterprise');
       return;
     }
     if (user.plan !== 'enterprise') {
-      if (window.confirm('Enterprise B2B 콘솔은 Enterprise ($1,990/월) 구독 전용 서비스입니다.\nEnterprise 플랜 구독 결제 페이지로 이동하시겠습니까?')) {
+      if (window.confirm(t('mypage.b2b_upgrade_confirm', 'Enterprise B2B 콘솔은 Enterprise ($1,990/월) 구독 전용 서비스입니다.\nEnterprise 플랜 구독 결제 페이지로 이동하시겠습니까?'))) {
         onOpenCheckout('enterprise');
       }
       return;
@@ -59,7 +77,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
     setTitleInput(user.title || '');
   }, [user]);
 
-  // Sync Supabase Audit Logs & Subscriptions
+  // Sync Supabase Audit Logs, Subscriptions & Target Vault
   useEffect(() => {
     fetchSkillAuditLogsDB().then(logs => {
       if (logs) setDbAuditLogs(logs);
@@ -67,39 +85,20 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
     fetchSubscriptionsDB().then(subs => {
       if (subs) setDbSubscriptions(subs);
     });
+    fetchTargetVaultDB().then(items => {
+      if (items) setDbVaultItems(items);
+    });
   }, []);
 
-  // Saved Target Vault State
-  const [vaultTargets, setVaultTargets] = useState<{ key: string; name: string; symbol: string; dept: string; deptKey: SaasCategory }[]>(() => {
-    try {
-      const stored = localStorage.getItem('aetheria_target_vault');
-      if (!stored) return [];
-      const keys: string[] = JSON.parse(stored);
-
-      const detailMap: Record<string, { name: string; symbol: string; dept: string; deptKey: SaasCategory }> = {
-        TAU: { name: 'Microtubule-Associated Protein Tau', symbol: 'MAPT', dept: '신경외과', deptKey: 'neurosurgery' },
-        SNCA: { name: 'Alpha-Synuclein Lewy Body Target', symbol: 'SNCA', dept: '신경과', deptKey: 'neurology' },
-        MMP13: { name: 'Matrix Metalloproteinase-13', symbol: 'MMP13', dept: '정형외과', deptKey: 'orthopedics' },
-        HTR2A: { name: '5-Hydroxytryptamine Receptor 2A', symbol: 'HTR2A', dept: '정신건강의학과', deptKey: 'psychiatry' },
-        PCSK9: { name: 'Proprotein Convertase Subtilisin 9', symbol: 'PCSK9', dept: '순환기내과', deptKey: 'cardiology' },
-        PDL1: { name: 'Programmed Death-Ligand 1', symbol: 'CD274', dept: '종양내과', deptKey: 'oncology' },
-        GLP1R: { name: 'GLP-1 Receptor Metabolic Target', symbol: 'GLP1R', dept: '내분비내과', deptKey: 'endocrinology' },
-        TNF: { name: 'Tumor Necrosis Factor Alpha', symbol: 'TNF', dept: '류마티스내과', deptKey: 'immunology' },
-        COL1A1: { name: 'Collagen Type I Alpha 1', symbol: 'COL1A1', dept: '피부과', deptKey: 'dermatology' },
-        VEGFA: { name: 'Vascular Endothelial Growth Factor A', symbol: 'VEGFA', dept: '안과', deptKey: 'ophthalmology' },
-        SIRT1: { name: 'Sirtuin 1 Longevity Enzyme', symbol: 'SIRT1', dept: '안티에이징', deptKey: 'longevity' }
-      };
-
-      return keys.map(k => ({
-        key: k,
-        name: detailMap[k]?.name || `${k} Protein Target`,
-        symbol: detailMap[k]?.symbol || k,
-        dept: detailMap[k]?.dept || '생의학',
-        deptKey: detailMap[k]?.deptKey || 'neurosurgery'
-      })) as any;
-    } catch {
-      return [];
-    }
+  const vaultTargets = dbVaultItems.map(item => {
+    const detail = VAULT_DETAIL_MAP[item.target_key];
+    return {
+      key: item.target_key,
+      name: detail?.name || `${item.target_key} Protein Target`,
+      symbol: detail?.symbol || item.target_key,
+      dept: detail?.dept || t('mypage.vault_dept_fallback', '생의학'),
+      deptKey: detail?.deptKey || ('neurosurgery' as SaasCategory)
+    };
   });
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -125,13 +124,9 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
     setTimeout(() => setIsSavedSuccess(false), 3000);
   };
 
-  const handleRemoveVaultItem = (keyToRemove: string) => {
-    const updated = vaultTargets.filter(t => t.key !== keyToRemove);
-    setVaultTargets(updated);
-    try {
-      const keys = updated.map(u => u.key);
-      localStorage.setItem('aetheria_target_vault', JSON.stringify(keys));
-    } catch (e) { console.error(e); }
+  const handleRemoveVaultItem = async (keyToRemove: string) => {
+    setDbVaultItems(prev => prev.filter(item => item.target_key !== keyToRemove));
+    await removeTargetVaultItemDB(user.id, keyToRemove);
   };
 
   if (!isLoggedIn) {
@@ -190,7 +185,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#ffffff', margin: 0 }}>
-                  {user.name || '성함 미설정 연구자'}
+                  {user.name || t('mypage.name_unset', '성함 미설정 연구자')}
                 </h2>
                 {user.plan === 'enterprise' ? (
                   <span className="badge badge-gold" style={{ fontWeight: 800 }}><Crown size={14} /> Enterprise VIP</span>
@@ -201,7 +196,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                 )}
               </div>
               <p style={{ fontSize: '0.88rem', color: '#bcc9cd', margin: 0, marginTop: '4px' }}>
-                {user.title || user.institution ? `${user.title || ''} ${user.institution ? `@ ${user.institution}` : ''}` : '프로필 탭에서 연구자 정보를 등록해 보세요'} ({user.email || '등록 이메일 없음'})
+                {user.title || user.institution ? `${user.title || ''} ${user.institution ? `@ ${user.institution}` : ''}` : t('mypage.profile_hint', '프로필 탭에서 연구자 정보를 등록해 보세요')} ({user.email || t('mypage.email_unset', '등록 이메일 없음')})
               </p>
             </div>
           </div>
@@ -212,7 +207,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                 onClick={() => onOpenCheckout('pro')}
                 style={{ padding: '10px 20px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #4cd7f6 0%, #1bbd85 100%)', color: '#000', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
               >
-                <Zap size={16} /> Pro ($490) 업그레이드
+                <Zap size={16} /> {t('mypage.upgrade_pro_btn', 'Pro ($490) 업그레이드')}
               </button>
             )}
             {user.plan === 'pro' && (
@@ -220,14 +215,14 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                 onClick={() => onOpenCheckout('enterprise')}
                 style={{ padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(255, 215, 0, 0.4)', background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 170, 0, 0.2) 100%)', color: '#ffd700', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
               >
-                <Crown size={16} /> Enterprise 업그레이드 (Pro 차액 정산)
+                <Crown size={16} /> {t('mypage.upgrade_ent_btn', 'Enterprise 업그레이드 (Pro 차액 정산)')}
               </button>
             )}
             <button
               onClick={handleOpenB2BConsole}
               style={{ padding: '10px 20px', borderRadius: '12px', border: user.plan === 'enterprise' ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(255, 215, 0, 0.2)', background: user.plan === 'enterprise' ? 'rgba(255, 215, 0, 0.12)' : 'rgba(255, 215, 0, 0.05)', color: '#ffd700', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <Building2 size={16} /> {user.plan === 'enterprise' ? 'Enterprise B2B 콘솔' : 'Enterprise B2B 콘솔 신청 ($1,990)'}
+              <Building2 size={16} /> {user.plan === 'enterprise' ? t('mypage.b2b_console_btn', 'Enterprise B2B 콘솔') : t('mypage.b2b_apply_btn', 'Enterprise B2B 콘솔 신청 ($1,990)')}
             </button>
           </div>
         </div>
@@ -296,46 +291,46 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
           <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '640px' }}>
             <div>
               <label style={{ fontSize: '0.85rem', color: '#bcc9cd', fontWeight: 700, marginBottom: '6px', display: 'block' }}>
-                연구자 성함 (Full Name)
+                {t('mypage.label_name', '연구자 성함 (Full Name)')}
               </label>
               <input
                 type="text"
                 value={nameInput}
                 onChange={e => setNameInput(e.target.value)}
-                placeholder="예: 김승우 박사 / Dr. Seung-Woo Kim"
+                placeholder={t('mypage.placeholder_name', '예: 김승우 박사 / Dr. Seung-Woo Kim')}
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(76, 215, 246, 0.3)', color: '#ffffff', fontSize: '0.92rem' }}
               />
             </div>
 
             <div>
               <label style={{ fontSize: '0.85rem', color: '#bcc9cd', fontWeight: 700, marginBottom: '6px', display: 'block' }}>
-                소속 연구 기관 / 대학 / 기업명
+                {t('mypage.label_institution', '소속 연구 기관 / 대학 / 기업명')}
               </label>
               <input
                 type="text"
                 value={institutionInput}
                 onChange={e => setInstitutionInput(e.target.value)}
-                placeholder="예: 서울대학교 의과대학 / Aetheria BioTech Institute"
+                placeholder={t('mypage.placeholder_institution', '예: 서울대학교 의과대학 / Aetheria BioTech Institute')}
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(76, 215, 246, 0.3)', color: '#ffffff', fontSize: '0.92rem' }}
               />
             </div>
 
             <div>
               <label style={{ fontSize: '0.85rem', color: '#bcc9cd', fontWeight: 700, marginBottom: '6px', display: 'block' }}>
-                연구 직책 및 전문 분야 (Title & Specialization)
+                {t('mypage.label_title', '연구 직책 및 전문 분야 (Title & Specialization)')}
               </label>
               <input
                 type="text"
                 value={titleInput}
                 onChange={e => setTitleInput(e.target.value)}
-                placeholder="예: 책임연구원 / Senior Principal Researcher"
+                placeholder={t('mypage.placeholder_title', '예: 책임연구원 / Senior Principal Researcher')}
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(76, 215, 246, 0.3)', color: '#ffffff', fontSize: '0.92rem' }}
               />
             </div>
 
             <div>
               <label style={{ fontSize: '0.85rem', color: '#bcc9cd', fontWeight: 700, marginBottom: '6px', display: 'block' }}>
-                등록 이메일 주소 (이메일 변경 불가)
+                {t('mypage.label_email', '등록 이메일 주소 (이메일 변경 불가)')}
               </label>
               <input
                 type="email"
@@ -359,7 +354,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
 
               {isSavedSuccess && (
                 <span style={{ color: '#4edea3', fontSize: '0.88rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Check size={18} /> 성공적으로 저장되었습니다!
+                  <Check size={18} /> {t('mypage.save_success', '성공적으로 저장되었습니다!')}
                 </span>
               )}
             </div>
@@ -372,16 +367,16 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
         <div className="glass-panel p-8" style={{ border: '1px solid rgba(255,215,0,0.3)', borderRadius: '24px', background: 'rgba(15, 23, 42, 0.9)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffffff', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Star size={22} color="#ffd700" /> 관심 표적 보관함 (Target Vault)
+              <Star size={22} color="#ffd700" /> {t('mypage.vault_title', '관심 표적 보관함 (Target Vault)')}
             </h3>
             <span style={{ fontSize: '0.85rem', color: '#8899a6' }}>
-              연구자가 북마크한 유전자/단백질 3D 표적 목록입니다.
+              {t('mypage.vault_subtitle', '연구자가 북마크한 유전자/단백질 3D 표적 목록입니다.')}
             </span>
           </div>
 
           {vaultTargets.length === 0 ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#8899a6', fontSize: '0.95rem' }}>
-              보관함에 저장된 관심 표적이 없습니다. 스캐너 화면에서 [⭐ 관심 타깃 저장] 버튼을 누르면 등록됩니다.
+              {t('mypage.vault_empty', '보관함에 저장된 관심 표적이 없습니다. 스캐너 화면에서 [⭐ 관심 타깃 저장] 버튼을 누르면 등록됩니다.')}
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
@@ -402,7 +397,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                       <button
                         onClick={() => handleRemoveVaultItem(target.key)}
                         style={{ background: 'none', border: 'none', color: '#ff6b81', cursor: 'pointer', padding: '4px' }}
-                        title="보관함에서 삭제"
+                        title={t('mypage.vault_remove_title', '보관함에서 삭제')}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -424,7 +419,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                       cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
                     }}
                   >
-                    <span>{target.dept} AI 표적 스캐너로 이동</span>
+                    <span>{target.dept} {t('mypage.vault_goto', 'AI 표적 스캐너로 이동')}</span>
                     <ArrowRight size={14} />
                   </button>
                 </div>
@@ -438,12 +433,12 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
       {activeTab === 'history' && (
         <div className="glass-panel p-8" style={{ border: '1px solid rgba(78,222,163,0.3)', borderRadius: '24px', background: 'rgba(15, 23, 42, 0.9)' }}>
           <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffffff', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Clock size={22} color="#4edea3" /> 최근 사이언스 스킬 AI 스캐닝 활동 기록 (Database Live Log)
+            <Clock size={22} color="#4edea3" /> {t('mypage.history_title', '최근 사이언스 스킬 AI 스캐닝 활동 기록 (Database Live Log)')}
           </h3>
 
           {dbAuditLogs.length === 0 ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#8899a6', fontSize: '0.95rem' }}>
-              아직 기록된 AI 스캐닝 활동 내역이 없습니다. 스캐너 및 파이프라인을 실행하면 분석 로그가 데이터베이스에 자동으로 기록됩니다.
+              {t('mypage.history_empty', '아직 기록된 AI 스캐닝 활동 내역이 없습니다. 스캐너 및 파이프라인을 실행하면 분석 로그가 데이터베이스에 자동으로 기록됩니다.')}
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -452,17 +447,17 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{ fontSize: '0.8rem', color: '#8899a6', fontWeight: 700 }}>
-                        {log.created_at ? new Date(log.created_at).toLocaleString() : '최근'}
+                        {log.created_at ? new Date(log.created_at).toLocaleString() : t('mypage.recently', '최근')}
                       </span>
                       <span className="badge badge-cyan" style={{ fontSize: '0.75rem' }}>{log.category}</span>
                       <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff' }}>{log.query_target}</span>
                     </div>
                     <div style={{ fontSize: '0.78rem', color: '#bcc9cd', marginTop: '4px' }}>
-                      연동 스킬: {log.skill_name} ({log.skill_id})
+                      {t('mypage.linked_skill', '연동 스킬:')} {log.skill_name} ({log.skill_id})
                     </div>
                   </div>
                   <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#4edea3' }}>
-                    실행시간 {log.execution_time_ms || 120}ms / DB 저장됨
+                    {t('mypage.exec_time_prefix', '실행시간')} {log.execution_time_ms || 120}ms {t('mypage.exec_time_suffix', '/ DB 저장됨')}
                   </div>
                 </div>
               ))}
@@ -475,59 +470,59 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
       {activeTab === 'billing' && (
         <div className="glass-panel p-8" style={{ border: '1px solid rgba(208,188,255,0.3)', borderRadius: '24px', background: 'rgba(15, 23, 42, 0.9)' }}>
           <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffffff', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <KeyRound size={22} color="#d0bcff" /> SaaS 구독 및 라이선스 정산 관리 (Database Live)
+            <KeyRound size={22} color="#d0bcff" /> {t('mypage.billing_title', 'SaaS 구독 및 라이선스 정산 관리 (Database Live)')}
           </h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '24px' }}>
             <div style={{ padding: '24px', borderRadius: '18px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(76, 215, 246, 0.3)' }}>
-              <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>현재 활성화된 플랜</div>
+              <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>{t('mypage.current_plan', '현재 활성화된 플랜')}</div>
               <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#4cd7f6', margin: '8px 0' }}>
                 {user.plan === 'enterprise' ? 'Enterprise Solopreneur VIP' : user.plan === 'pro' ? 'Pro Neuro-Rejuve SaaS' : 'Free Starter Tier'}
               </div>
               <div style={{ fontSize: '0.85rem', color: '#bcc9cd' }}>
-                월 구독 결제금액: {user.plan === 'enterprise' ? '$2,500 / mo' : user.plan === 'pro' ? '$490 / mo' : '$0 Free'}
+                {t('mypage.monthly_fee', '월 구독 결제금액:')} {user.plan === 'enterprise' ? '$2,500 / mo' : user.plan === 'pro' ? '$490 / mo' : t('mypage.free_price', '$0 Free')}
               </div>
             </div>
 
             <div style={{ padding: '24px', borderRadius: '18px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(78, 222, 163, 0.3)' }}>
-              <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>DB 동기화 정산 ID 상태</div>
+              <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>{t('mypage.db_sync_status', 'DB 동기화 정산 ID 상태')}</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#4edea3', margin: '8px 0', fontFamily: 'monospace' }}>
-                {dbSubscriptions.length > 0 ? (dbSubscriptions[0].stripe_customer_id || 'PAYPAL-SUB-LIVE') : '미결제 (No Active Billing)'}
+                {dbSubscriptions.length > 0 ? (dbSubscriptions[0].stripe_customer_id || 'PAYPAL-SUB-LIVE') : t('mypage.no_active_billing', '미결제 (No Active Billing)')}
               </div>
               <div style={{ fontSize: '0.85rem', color: '#bcc9cd', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <ShieldCheck size={16} color="#4edea3" /> PayPal 결제 승인 시스템 연동 활성화
+                <ShieldCheck size={16} color="#4edea3" /> {t('mypage.paypal_active', 'PayPal 결제 승인 시스템 연동 활성화')}
               </div>
             </div>
 
             <div style={{ padding: '24px', borderRadius: '18px', background: 'rgba(23, 31, 51, 0.8)', border: '1px solid rgba(255, 215, 0, 0.35)' }}>
-              <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>Enterprise B2B 전용 콘솔 Center</div>
+              <div style={{ fontSize: '0.85rem', color: '#8899a6', fontWeight: 700 }}>{t('mypage.b2b_center_title', 'Enterprise B2B 전용 콘솔 Center')}</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffd700', margin: '8px 0' }}>
-                API Key 발급 · 개발자 콘솔 · FTO 감사
+                {t('mypage.b2b_center_desc', 'API Key 발급 · 개발자 콘솔 · FTO 감사')}
               </div>
               <button
                 onClick={handleOpenB2BConsole}
                 style={{ width: '100%', marginTop: '4px', padding: '10px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #ffd700 0%, #ffaa00 100%)', color: '#000', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
-                <Building2 size={16} /> {user.plan === 'enterprise' ? 'Enterprise B2B 콘솔 열기' : 'Enterprise B2B 콘솔 신청 & 결제'}
+                <Building2 size={16} /> {user.plan === 'enterprise' ? t('mypage.b2b_open_btn', 'Enterprise B2B 콘솔 열기') : t('mypage.b2b_apply_pay_btn', 'Enterprise B2B 콘솔 신청 & 결제')}
               </button>
             </div>
           </div>
 
           <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff', marginBottom: '12px' }}>
-            결제 및 정산 내역 히스토리 ({dbSubscriptions.length}건)
+            {t('mypage.billing_history_title', '결제 및 정산 내역 히스토리')} ({dbSubscriptions.length}{t('mypage.count_suffix', '건')})
           </h4>
 
           {dbSubscriptions.length === 0 ? (
             <div style={{ padding: '30px', textAlign: 'center', color: '#8899a6', fontSize: '0.9rem', background: 'rgba(23, 31, 51, 0.5)', borderRadius: '14px' }}>
-              아직 정기구독 결제 내역이 없습니다. 플랜 업그레이드 진행 시 결제 영수증이 데이터베이스에 실시간 보관됩니다.
+              {t('mypage.billing_history_empty', '아직 정기구독 결제 내역이 없습니다. 플랜 업그레이드 진행 시 결제 영수증이 데이터베이스에 실시간 보관됩니다.')}
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {dbSubscriptions.map((sub, idx) => (
                 <div key={sub.id || idx} style={{ padding: '14px 18px', borderRadius: '12px', background: 'rgba(23, 31, 51, 0.6)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <span style={{ fontWeight: 800, color: '#ffffff', marginRight: '10px' }}>{sub.tier.toUpperCase()} 플랜</span>
-                    <span style={{ fontSize: '0.8rem', color: '#8899a6' }}>{sub.started_at ? new Date(sub.started_at).toLocaleDateString() : '최근'}</span>
+                    <span style={{ fontWeight: 800, color: '#ffffff', marginRight: '10px' }}>{sub.tier.toUpperCase()} {t('mypage.plan_suffix', '플랜')}</span>
+                    <span style={{ fontSize: '0.8rem', color: '#8899a6' }}>{sub.started_at ? new Date(sub.started_at).toLocaleDateString() : t('mypage.recently', '최근')}</span>
                   </div>
                   <div style={{ fontWeight: 800, color: '#4cd7f6' }}>
                     ${sub.amount_usd} USD

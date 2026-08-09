@@ -63,7 +63,31 @@ CREATE TABLE IF NOT EXISTS public.skill_audit_logs (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 6. 이미 배포된 DB를 최신 스키마에 맞춰 재조정 (컬럼이 이미 있으면 건너뜀 — 몇 번을 다시 실행해도 안전)
+-- 6. Create 'target_vault' Table (마이페이지 관심 표적 보관함 — 계정별 북마크)
+CREATE TABLE IF NOT EXISTS public.target_vault (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  target_key VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, target_key)
+);
+ALTER TABLE public.target_vault ENABLE ROW LEVEL SECURITY;
+-- 신규 테이블이라 처음부터 본인 소유 행만 접근 가능하도록 하드닝된 정책으로 생성
+-- (is_current_user_admin() 헬퍼 함수가 아직 없는 환경에서도 독립적으로 동작하도록 auth_uid를 직접 비교)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='target_vault') THEN
+    CREATE POLICY "target_vault_own_rows_only" ON public.target_vault
+      FOR ALL USING (
+        user_id IN (SELECT id FROM public.users WHERE auth_uid = auth.uid()::text)
+      )
+      WITH CHECK (
+        user_id IN (SELECT id FROM public.users WHERE auth_uid = auth.uid()::text)
+      );
+  END IF;
+END $$;
+
+-- 7. 이미 배포된 DB를 최신 스키마에 맞춰 재조정 (컬럼이 이미 있으면 건너뜀 — 몇 번을 다시 실행해도 안전)
 --    2026-08-09 실사용 DB 점검 결과, 초기에 배포된 테이블이 이후 추가된 컬럼들을
 --    전혀 반영하지 못한 채로 운영되고 있었음이 확인되어 전체 컬럼을 재점검함.
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS institution VARCHAR(255) DEFAULT 'Aetheria BioTech Institute';
@@ -96,13 +120,13 @@ ALTER TABLE public.skill_audit_logs ADD COLUMN IF NOT EXISTS skill_name VARCHAR(
 ALTER TABLE public.skill_audit_logs ADD COLUMN IF NOT EXISTS category VARCHAR(100) DEFAULT '';
 ALTER TABLE public.skill_audit_logs ADD COLUMN IF NOT EXISTS is_bookmarked BOOLEAN DEFAULT FALSE;
 
--- 7. Enable Row Level Security (RLS) for Security
+-- 8. Enable Row Level Security (RLS) for Security
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.api_keys ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.skill_audit_logs ENABLE ROW LEVEL SECURITY;
 
--- 8. RLS Policies — 신규 설치 시 최초 1회만 임시로 전면 공개 정책을 만든다.
+-- 9. RLS Policies — 신규 설치 시 최초 1회만 임시로 전면 공개 정책을 만든다.
 --    실제 운영 중인 DB라면 이 블록은 건너뛰고 바로 rls_hardening_migration.sql을
 --    적용할 것 (그 파일이 아래 정책들을 DROP하고 본인 행/관리자 기준 정책으로 교체한다).
 DO $$
@@ -121,7 +145,7 @@ BEGIN
   END IF;
 END $$;
 
--- 9. Insert Default Sample Data (테스트용 샘플 데이터)
+-- 10. Insert Default Sample Data (테스트용 샘플 데이터)
 INSERT INTO public.users (auth_uid, email, name, institution, title, plan, queries_remaining)
 VALUES 
   ('user-001', 'scientist@aetheria.bio', 'Dr. Seung-Woo Kim', 'Aetheria BioTech Institute', 'Senior Principal Researcher', 'free', 3)

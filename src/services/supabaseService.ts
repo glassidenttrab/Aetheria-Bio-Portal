@@ -274,3 +274,66 @@ export async function fetchSubscriptionsDB(): Promise<SubscriptionItem[]> {
   }
 }
 
+export interface TargetVaultItem {
+  id?: string;
+  user_id?: string;
+  target_key: string;
+  created_at?: string;
+}
+
+/**
+ * 10. Fetch the logged-in user's saved target vault (bookmarks) from Supabase DB
+ */
+export async function fetchTargetVaultDB(): Promise<TargetVaultItem[]> {
+  try {
+    const { data, error } = await supabase
+      .from('target_vault')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error || !data) return [];
+    return data as TargetVaultItem[];
+  } catch (err) {
+    console.warn('Supabase target_vault fetch exception:', err);
+    return [];
+  }
+}
+
+/**
+ * 11. Add a target to the logged-in user's vault (no-op if already saved)
+ */
+export async function addTargetVaultItemDB(userId: string, targetKey: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('target_vault')
+      .upsert({ user_id: userId, target_key: targetKey }, { onConflict: 'user_id,target_key', ignoreDuplicates: true });
+
+    if (error) {
+      console.warn('Supabase target_vault insert notice:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn('Supabase target_vault insert exception:', err);
+    return false;
+  }
+}
+
+/**
+ * 12. Remove a target from the logged-in user's vault
+ */
+export async function removeTargetVaultItemDB(userId: string, targetKey: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('target_vault')
+      .delete()
+      .eq('user_id', userId)
+      .eq('target_key', targetKey);
+
+    return !error;
+  } catch (err) {
+    console.warn('Supabase target_vault delete exception:', err);
+    return false;
+  }
+}
+

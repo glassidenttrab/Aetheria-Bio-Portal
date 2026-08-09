@@ -475,6 +475,7 @@ const AppInner: React.FC = () => {
       <SuperAdminDashboardModal
         isOpen={isSuperAdminOpen}
         onClose={() => setIsSuperAdminOpen(false)}
+        adminEmail={authUser?.email || null}
       />
 
       <ContactSupportModal

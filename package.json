@@ -6,10 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^10.3.0",
+    "@sentry/react": "^10.69.0",
     "@supabase/supabase-js": "^2.112.2",
     "3dmol": "^2.5.5",
     "firebase": "^12.17.1",
@@ -18,10 +22,21 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "@vitest/ui": "^4.1.10",
+    "eslint": "^10.8.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "globals": "^17.9.0",
+    "jsdom": "^29.1.1",
     "typescript": "^5.5.3",
-    "vite": "^5.4.1"
+    "typescript-eslint": "^8.66.0",
+    "vite": "^5.4.1",
+    "vitest": "^4.1.10"
   }
 }

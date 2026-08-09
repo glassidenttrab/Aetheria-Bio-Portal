@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import $ from 'jquery';
 import * as $3Dmol from '3dmol';
 
 interface Protein3DViewerProps {

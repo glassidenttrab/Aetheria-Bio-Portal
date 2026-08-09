@@ -4,7 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { UserProfile, UserPlanTier, PaymentReceipt } from '../types';
 import { PayPalCheckoutButton } from './payment/PayPalCheckoutButton';
 import { SAAS_PAYPAL_PRODUCTS } from '../lib/paypal';
-import { ShieldCheck, CreditCard, Lock, CheckCircle2, Sparkles, X, Zap, Crown } from 'lucide-react';
+import { ShieldCheck, Lock, CheckCircle2, Sparkles, X, Zap, Crown } from 'lucide-react';
 
 interface SubscriptionCheckoutModalProps {
   isOpen: boolean;
@@ -24,9 +24,6 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
   onRequireAuth
 }) => {
   const { t } = useLanguage();
-  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'credit_card'>('paypal');
-  const [cardNumber, setCardNumber] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
   const [receipt, setReceipt] = useState<PaymentReceipt | null>(null);
 
   if (!isOpen) return null;
@@ -62,25 +59,6 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
     };
     setReceipt(newReceipt);
     onPaymentSuccess(selectedTier, newReceipt);
-  };
-
-  // 신용카드 승인 처리
-  const handleCardPaymentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsProcessing(true);
-
-    setTimeout(() => {
-      setIsProcessing(false);
-      const newReceipt: PaymentReceipt = {
-        transactionId: `TX-AE-${Math.floor(100000 + Math.random() * 900000)}`,
-        planTier: selectedTier,
-        amountUSD: finalPayablePrice,
-        timestamp: new Date().toLocaleString(),
-        cardLast4: '4242'
-      };
-      setReceipt(newReceipt);
-      onPaymentSuccess(selectedTier, newReceipt);
-    }, 1000);
   };
 
   return (
@@ -233,79 +211,28 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                 </div>
               )}
 
-              {/* 결제 수단 선택 */}
+              {/* 결제 수단: PayPal 단독 (실제 결제 승인이 확인 가능한 유일한 경로) */}
               <div style={{ marginBottom: '20px' }}>
                 <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#bcc9cd', marginBottom: '10px' }}>
-                  {t('checkout.method_select', '결제 수단 선택 (Select Payment Method)')}
+                  {t('checkout.method_select', '결제 수단 (Payment Method)')}
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('paypal')}
-                    style={{
-                      flex: 1, padding: '12px', borderRadius: '12px', cursor: 'pointer',
-                      border: paymentMethod === 'paypal' ? '2px solid #0070ba' : '1px solid rgba(255,255,255,0.15)',
-                      background: paymentMethod === 'paypal' ? 'rgba(0, 112, 186, 0.15)' : 'rgba(23, 31, 51, 0.6)',
-                      color: paymentMethod === 'paypal' ? '#0070ba' : '#bcc9cd', fontWeight: 800, fontSize: '0.85rem',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-                    }}
-                  >
-                    {t('checkout.paypal_label', 'PayPal (글로벌 간편 결제)')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('credit_card')}
-                    style={{
-                      flex: 1, padding: '12px', borderRadius: '12px', cursor: 'pointer',
-                      border: paymentMethod === 'credit_card' ? '2px solid #4cd7f6' : '1px solid rgba(255,255,255,0.15)',
-                      background: paymentMethod === 'credit_card' ? 'rgba(76, 215, 246, 0.15)' : 'rgba(23, 31, 51, 0.6)',
-                      color: paymentMethod === 'credit_card' ? '#4cd7f6' : '#bcc9cd', fontWeight: 800, fontSize: '0.85rem',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-                    }}
-                  >
-                    <CreditCard size={16} /> {t('checkout.card_label', '신용카드')}
-                  </button>
+                <div style={{
+                  padding: '12px', borderRadius: '12px', border: '2px solid #0070ba',
+                  background: 'rgba(0, 112, 186, 0.15)', color: '#0070ba', fontWeight: 800, fontSize: '0.85rem',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                }}>
+                  {t('checkout.paypal_label', 'PayPal (글로벌 간편 결제)')}
                 </div>
               </div>
 
-              {/* PayPal / 신용카드 입력 폼 */}
-              {paymentMethod === 'paypal' ? (
-                <div style={{ marginTop: '16px' }}>
-                  <PayPalCheckoutButton
-                    product={paypalProduct}
-                    overridePrice={isProToEnterpriseUpgrade ? finalPayablePrice : undefined}
-                    onSuccess={handlePayPalSuccess}
-                    onError={(err) => alert('PayPal 결제 실패: ' + err)}
-                  />
-                </div>
-              ) : (
-                <form onSubmit={handleCardPaymentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: '#bcc9cd', marginBottom: '4px', fontWeight: 700 }}>
-                      {t('checkout.card_number', '카드 번호')}
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="4242 •••• •••• 4242"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', background: 'rgba(23, 31, 51, 0.9)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '0.85rem' }}
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isProcessing || !isLoggedIn}
-                    style={{
-                      width: '100%', marginTop: '6px', padding: '13px', borderRadius: '12px', border: 'none',
-                      background: 'linear-gradient(135deg, #ffd700 0%, #ffaa00 100%)', color: '#000', fontWeight: 900, fontSize: '0.9rem',
-                      cursor: isProcessing ? 'wait' : 'pointer', boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)'
-                    }}
-                  >
-                    {isProcessing ? t('checkout.btn_processing', '결제 승인 중...') : `$${finalPayablePrice.toFixed(2)} ${t('checkout.btn_submit', '구독 승인 및 결제')}`}
-                  </button>
-                </form>
-              )}
+              <div style={{ marginTop: '16px' }}>
+                <PayPalCheckoutButton
+                  product={paypalProduct}
+                  overridePrice={isProToEnterpriseUpgrade ? finalPayablePrice : undefined}
+                  onSuccess={handlePayPalSuccess}
+                  onError={(err) => alert('PayPal 결제 실패: ' + err)}
+                />
+              </div>
             </>
           )}
         </div>

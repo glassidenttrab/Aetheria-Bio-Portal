@@ -206,7 +206,7 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
                 </span>
               </div>
               <p style={{ fontSize: '0.8rem', color: '#8899a6', margin: 0, marginTop: '2px' }}>
-                AlphaFold DB 200M+ & RCSB PDB Real-Time Interactive 3D Canvas
+                AlphaFold DB & RCSB PDB 기반 시뮬레이션 프리뷰 (Demo Preview Canvas)
               </p>
             </div>
           </div>
@@ -377,7 +377,7 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
         }}>
           <div style={{ fontSize: '0.8rem', color: '#8899a6', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Database size={16} color="#4cd7f6" />
-            <span>Connected to AlphaFold 200M+ & RCSB PDB Live API</span>
+            <span>Demo Simulation Preview (실제 AlphaFold/RCSB 라이브 연동 준비 중)</span>
           </div>
 
           <button

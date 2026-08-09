@@ -60,7 +60,8 @@ export const EnterpriseB2BConsoleModal: React.FC<EnterpriseB2BConsoleModalProps>
   };
 
   const handleGenerateApiKey = () => {
-    const randomHex = Array.from({ length: 24 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    const randomBytes = crypto.getRandomValues(new Uint8Array(24));
+    const randomHex = Array.from(randomBytes, (b) => b.toString(16).padStart(2, '0')).join('');
     setApiKey(`deeptech_ent_live_${randomHex}`);
   };
 

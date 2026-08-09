@@ -15,17 +15,23 @@ import {
 interface SuperAdminDashboardModalProps {
   isOpen: boolean;
   onClose: () => void;
+  // 실제 Firebase 로그인 세션에서 확인된 이메일. 관리자 화이트리스트(VITE_ADMIN_EMAILS)에
+  // 포함된 계정으로 로그인한 경우에만 마스터 콘솔 접근이 허용된다 (하드코딩 ID/PW 완전 제거).
+  adminEmail: string | null;
 }
 
 export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> = ({
   isOpen,
   onClose,
+  adminEmail,
 }) => {
   const { t } = useLanguage();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [adminIdInput, setAdminIdInput] = useState('');
-  const [adminPasswordInput, setAdminPasswordInput] = useState('');
-  const [authError, setAuthError] = useState<string | null>(null);
+
+  const allowedAdminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '')
+    .split(',')
+    .map((e: string) => e.trim().toLowerCase())
+    .filter(Boolean);
+  const isAuthorized = Boolean(adminEmail && allowedAdminEmails.includes(adminEmail.toLowerCase()));
 
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'b2b' | 'analytics'>('overview');
   const [userFilter, setUserFilter] = useState<'all' | 'free' | 'pro' | 'enterprise'>('all');
@@ -68,29 +74,12 @@ export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> =
   };
 
   useEffect(() => {
-    if (isOpen && isLoggedIn) {
+    if (isOpen && isAuthorized) {
       loadSuperAdminData();
     }
-  }, [isOpen, isLoggedIn]);
+  }, [isOpen, isAuthorized]);
 
   if (!isOpen) return null;
-
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (adminIdInput.trim() === 'ozpix' && adminPasswordInput === 'waps!@7102') {
-      setIsLoggedIn(true);
-      setAuthError(null);
-      setAdminIdInput('');
-      setAdminPasswordInput('');
-    } else {
-      setAuthError('❌ 아이디 또는 비밀번호가 올바르지 않습니다. (ID: ozpix / PW: waps!@7102)');
-    }
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setAuthError(null);
-  };
 
   const handleTriggerAction = (msg: string) => {
     setSystemNotice(msg);
@@ -114,7 +103,7 @@ export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> =
     const newKey = await createApiKeyDB({
       company_name: orgName,
       key_name: `${orgName} Live Key`,
-      api_key_hash: `deeptech_live_key_${Math.random().toString(36).substring(2, 12)}`,
+      api_key_hash: `deeptech_live_key_${Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, '0')).join('')}`,
       rate_limit_per_min: 1000,
       allowed_ip_range: '0.0.0.0/0'
     });
@@ -148,8 +137,8 @@ export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> =
     return matchesFilter && matchesSearch;
   });
 
-  // IF NOT LOGGED IN: SHOW ADMIN LOGIN FORM
-  if (!isLoggedIn) {
+  // IF NOT AN AUTHORIZED ADMIN ACCOUNT: SHOW ACCESS-DENIED / GUIDANCE SCREEN
+  if (!isAuthorized) {
     return (
       <div
         style={{
@@ -202,98 +191,31 @@ export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> =
               {t('admin.login_title', 'Aetheria Bio Portal - 최고 관리자 인증')}
             </h2>
             <p style={{ margin: '6px 0 0 0', fontSize: '0.84rem', color: '#94a3b8' }}>
-              {t('admin.login_subtitle', '마스터 콘솔에 접근하려면 최고 관리자 계정으로 로그인하세요.')}
+              {t('admin.login_subtitle', '마스터 콘솔은 관리자로 등록된 계정으로 로그인한 경우에만 접근할 수 있습니다.')}
             </p>
           </div>
 
-          {/* Auth Error Banner */}
-          {authError && (
-            <div
-              style={{
-                padding: '10px 14px',
-                borderRadius: '10px',
-                background: 'rgba(239, 68, 68, 0.15)',
-                border: '1px solid rgba(239, 68, 68, 0.4)',
-                color: '#fca5a5',
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                marginBottom: '18px',
-                textAlign: 'center',
-              }}
-            >
-              {authError}
-            </div>
-          )}
+          {/* Access Denied Banner */}
+          <div
+            style={{
+              padding: '14px 16px',
+              borderRadius: '10px',
+              background: 'rgba(239, 68, 68, 0.15)',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              color: '#fca5a5',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              marginBottom: '18px',
+              textAlign: 'center',
+              lineHeight: 1.5,
+            }}
+          >
+            {adminEmail
+              ? `❌ 현재 로그인된 계정(${adminEmail})은 관리자 권한이 없습니다.`
+              : '❌ 로그인이 필요합니다. 관리자로 등록된 계정으로 먼저 로그인해주세요.'}
+          </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', color: '#cbd5e1', fontWeight: 700, marginBottom: '6px' }}>
-                관리자 아이디 (Admin ID)
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="아이디를 입력하세요 (ozpix)"
-                value={adminIdInput}
-                onChange={(e) => setAdminIdInput(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(239, 68, 68, 0.35)',
-                  background: 'rgba(15, 23, 42, 0.8)',
-                  color: '#ffffff',
-                  fontSize: '0.92rem',
-                  outline: 'none',
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', color: '#cbd5e1', fontWeight: 700, marginBottom: '6px' }}>
-                관리자 비밀번호 (Admin Password)
-              </label>
-              <input
-                type="password"
-                required
-                placeholder="비밀번호를 입력하세요"
-                value={adminPasswordInput}
-                onChange={(e) => setAdminPasswordInput(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(239, 68, 68, 0.35)',
-                  background: 'rgba(15, 23, 42, 0.8)',
-                  color: '#ffffff',
-                  fontSize: '0.92rem',
-                  outline: 'none',
-                }}
-              />
-            </div>
-
-            <button
-              type="submit"
-              style={{
-                marginTop: '8px',
-                padding: '14px',
-                borderRadius: '12px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                color: '#ffffff',
-                fontWeight: 800,
-                fontSize: '0.95rem',
-                cursor: 'pointer',
-                boxShadow: '0 8px 20px rgba(239, 68, 68, 0.4)',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              🔓 {t('admin.btn_login', '어드민 인증 및 마스터 콘솔 접속')}
-            </button>
-          </form>
-
-          <div style={{ marginTop: '20px', textAlign: 'center' }}>
+          <div style={{ marginTop: '4px', textAlign: 'center' }}>
             <button
               type="button"
               onClick={onClose}
@@ -418,7 +340,7 @@ export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> =
             </button>
 
             <button
-              onClick={handleLogout}
+              onClick={onClose}
               style={{
                 background: 'rgba(239, 68, 68, 0.15)',
                 border: '1px solid rgba(239, 68, 68, 0.4)',
@@ -430,7 +352,7 @@ export const SuperAdminDashboardModal: React.FC<SuperAdminDashboardModalProps> =
                 fontSize: '0.82rem',
               }}
             >
-              🔒 {t('admin.logout', '로그아웃')}
+              🔒 {t('admin.close_console', '콘솔 닫기')}
             </button>
 
             <button

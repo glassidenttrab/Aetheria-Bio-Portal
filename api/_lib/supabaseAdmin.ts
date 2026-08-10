@@ -6,8 +6,13 @@ import type { ServerConfig } from './config.js';
  *
  * 이 키는 RLS를 우회하므로 브라우저로 절대 내려가면 안 된다. 오직 이
  * 서버리스 함수 안에서만 생성한다.
+ *
+ * PayPal 관련 값 없이 Supabase 자격 증명만 필요한 호출부(예: 만료 처리 cron)도
+ * 쓸 수 있도록 ServerConfig 전체가 아니라 필요한 두 필드만 요구한다.
  */
-export function createAdminClient(config: ServerConfig): SupabaseClient {
+export function createAdminClient(
+  config: Pick<ServerConfig, 'supabaseUrl' | 'supabaseServiceRoleKey'>
+): SupabaseClient {
   return createClient(config.supabaseUrl, config.supabaseServiceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });

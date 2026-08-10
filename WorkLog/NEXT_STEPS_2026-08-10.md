@@ -61,9 +61,12 @@
 3. **서버 측 쿼터 집계 도입** — 완료. `server/db/quota_enforcement_migration.sql` 신규 작성(`get_quota_status()`/`consume_quota()` SECURITY DEFINER RPC, `queries_remaining` 잠금 활성화), 클라이언트를 로그인 계정 기준 서버 RPC로 전환(게스트는 기존 로컬 방식 유지). **다만 이 마이그레이션은 아직 Supabase에 적용되지 않았습니다 — 대표님이 SQL Editor에서 직접 실행해주셔야 합니다** (선행 조건인 `rls_hardening_migration.sql`, `payment_verification_migration.sql`은 이미 적용 완료 상태로 확인됨).
    - typecheck/build/vitest/eslint 전체 통과 확인.
 
-### P1-B — 이번 주 내 (남은 항목)
+### ✅ P1-B — 완료 (2026-08-10 처리, WORK_LOG 22번 항목)
 
-4. **구독 만료 자동 강제** — `expire_stale_subscriptions()`를 Supabase의 `pg_cron` extension으로 매일 1회 실행하도록 스케줄링(Supabase 대시보드에서 몇 줄 SQL로 가능), 또는 Vercel Cron(`vercel.json`의 `crons` 필드)으로 서버리스 엔드포인트를 주기 호출.
+4. **구독 만료 자동 강제** — 완료. `api/cron/expire-subscriptions.ts` 신규 작성 + `vercel.json`에 매일 00:00 UTC 실행되는 cron 등록, `expire_stale_subscriptions()` RPC를 호출하도록 연결. **`CRON_SECRET` 환경변수를 Vercel 대시보드에 새로 등록해주셔야 합니다** — 별도 SQL 실행은 불필요합니다(관련 함수/권한은 이미 적용되어 있음).
+   - typecheck/build/vitest/eslint 전체 통과 확인.
+
+이것으로 이 문서에 정리했던 P0~P1 항목은 모두 코드 조치가 끝났습니다. 남은 것은 대표님이 Vercel에 `CRON_SECRET`을 등록하시는 것뿐입니다.
 
 ### P2 — 출시 전 최종 점검
 

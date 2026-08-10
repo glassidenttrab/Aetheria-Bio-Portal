@@ -167,8 +167,8 @@ GRANT EXECUTE ON FUNCTION public.apply_paid_subscription(
 --    현재 결제는 1회 캡처이므로 자동 갱신이 없다. 따라서 기간이 지나면
 --    반드시 권한을 회수해야 "한 번 결제 = 평생 이용"이 되지 않는다.
 --
---    Supabase 대시보드 > Database > Cron 에서 하루 1회 실행하도록 등록할 것:
---      SELECT public.expire_stale_subscriptions();
+--    이 함수 자체를 주기적으로 호출하는 것은 api/cron/expire-subscriptions.ts +
+--    vercel.json의 crons 설정이 담당한다(Vercel Cron이 매일 1회 호출).
 -- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.expire_stale_subscriptions()
 RETURNS INTEGER

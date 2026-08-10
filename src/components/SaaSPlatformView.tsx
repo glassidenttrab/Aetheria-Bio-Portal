@@ -76,7 +76,7 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
       return;
     }
     if (user.plan !== 'enterprise') {
-      if (window.confirm('Enterprise B2B 콘솔은 Enterprise ($1,990/월) 구독 전용 서비스입니다.\nEnterprise 플랜 구독 결제 페이지로 이동하시겠습니까?')) {
+      if (window.confirm(t('mypage.b2b_upgrade_confirm', 'Enterprise B2B 콘솔은 Enterprise ($2,500/월) 구독 전용 서비스입니다.\nEnterprise 플랜 구독 결제 페이지로 이동하시겠습니까?'))) {
         onOpenCheckout('enterprise');
       }
       return;
@@ -166,6 +166,7 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
       setAnalysisResult(res);
       onUpdateUser({ queriesRemaining: queriesRemaining - 1 });
       saveSkillAuditLogDB({
+        user_id: user.id !== 'guest' ? user.id : undefined,
         skill_id: `ai_target_scan_${activeCategory}`,
         skill_name: t(`dept.${activeCategory}`, activeCategory),
         category: activeCategory,

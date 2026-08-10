@@ -108,12 +108,18 @@ export async function upsertUserProfileDB(profile: Partial<UserProfile> & { emai
 
 /**
  * 3. Save Skill Query Audit Log / Bookmark to Supabase DB
+ *
+ * user_id를 채우지 않고 insert하면, RLS 하드닝(skill_audit_logs_own_or_admin)이
+ * 적용된 상태에서는 USING 절의 user_id IN (...) 조건이 NULL과 절대 매치되지
+ * 않아 insert 자체가 조용히 실패한다(에러는 console.warn으로만 삼켜짐). 그래서
+ * 호출부가 로그인한 사용자의 users.id를 반드시 함께 넘기도록 한다.
  */
 export async function saveSkillAuditLogDB(logItem: SkillAuditLogItem): Promise<boolean> {
   try {
     const { error } = await supabase
       .from('skill_audit_logs')
       .insert({
+        user_id: logItem.user_id,
         skill_id: logItem.skill_id,
         skill_name: logItem.skill_name,
         category: logItem.category,

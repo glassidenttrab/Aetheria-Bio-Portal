@@ -512,6 +512,7 @@ const AppInner: React.FC = () => {
       <ContactSupportModal
         isOpen={isSupportOpen}
         onClose={() => setIsSupportOpen(false)}
+        userId={user.id !== 'guest' ? user.id : undefined}
       />
 
       <AuthModal

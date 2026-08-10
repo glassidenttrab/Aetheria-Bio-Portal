@@ -6,9 +6,10 @@ import { saveSkillAuditLogDB } from '../services/supabaseService';
 interface ContactSupportModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userId?: string;
 }
 
-export const ContactSupportModal: React.FC<ContactSupportModalProps> = ({ isOpen, onClose }) => {
+export const ContactSupportModal: React.FC<ContactSupportModalProps> = ({ isOpen, onClose, userId }) => {
   const { t } = useLanguage();
   const [senderName, setSenderName] = useState('');
   const [senderEmail, setSenderEmail] = useState('');
@@ -28,6 +29,7 @@ export const ContactSupportModal: React.FC<ContactSupportModalProps> = ({ isOpen
     try {
       // 1. Supabase DB Audit Log 저장
       await saveSkillAuditLogDB({
+        user_id: userId,
         skill_id: 'contact_support_inquiry',
         skill_name: `Customer Support (${inquiryType.toUpperCase()})`,
         category: 'customer_support',

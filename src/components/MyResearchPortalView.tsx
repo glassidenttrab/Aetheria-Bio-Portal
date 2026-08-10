@@ -57,7 +57,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
       return;
     }
     if (user.plan !== 'enterprise') {
-      if (window.confirm(t('mypage.b2b_upgrade_confirm', 'Enterprise B2B 콘솔은 Enterprise ($1,990/월) 구독 전용 서비스입니다.\nEnterprise 플랜 구독 결제 페이지로 이동하시겠습니까?'))) {
+      if (window.confirm(t('mypage.b2b_upgrade_confirm', 'Enterprise B2B 콘솔은 Enterprise ($2,500/월) 구독 전용 서비스입니다.\nEnterprise 플랜 구독 결제 페이지로 이동하시겠습니까?'))) {
         onOpenCheckout('enterprise');
       }
       return;
@@ -222,7 +222,7 @@ export const MyResearchPortalView: React.FC<MyResearchPortalViewProps> = ({
               onClick={handleOpenB2BConsole}
               style={{ padding: '10px 20px', borderRadius: '12px', border: user.plan === 'enterprise' ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(255, 215, 0, 0.2)', background: user.plan === 'enterprise' ? 'rgba(255, 215, 0, 0.12)' : 'rgba(255, 215, 0, 0.05)', color: '#ffd700', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <Building2 size={16} /> {user.plan === 'enterprise' ? t('mypage.b2b_console_btn', 'Enterprise B2B 콘솔') : t('mypage.b2b_apply_btn', 'Enterprise B2B 콘솔 신청 ($1,990)')}
+              <Building2 size={16} /> {user.plan === 'enterprise' ? t('mypage.b2b_console_btn', 'Enterprise B2B 콘솔') : t('mypage.b2b_apply_btn', 'Enterprise B2B 콘솔 신청 ($2,500)')}
             </button>
           </div>
         </div>

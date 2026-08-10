@@ -9,10 +9,11 @@ import { EnterpriseB2BConsoleModal } from './EnterpriseB2BConsoleModal';
 import { useLanguage } from '../contexts/LanguageContext';
 import { PLAN_QUOTA_CAP, resolveQuota } from '../utils/quota';
 import { fetchTargetVaultDB, addTargetVaultItemDB, removeTargetVaultItemDB, saveSkillAuditLogDB, getQuotaStatusDB, consumeQuotaDB } from '../services/supabaseService';
+import { fetchLiveGeneLookup, GeneLookupResult } from '../services/liveGeneLookupService';
 import {
   Brain, Bone, Smile, Stethoscope, Clock, Sparkles, Search, Dna, Download, ShieldCheck, CheckCircle, Zap,
   ExternalLink, KeyRound, ArrowRight, Activity, FlaskConical, Layers, Crown, Lock, Eye, ChevronRight, Filter, Info, HeartPulse,
-  Box, Terminal, Star, FileText, Printer, Building2
+  Box, Terminal, Star, FileText, Printer, Building2, Microscope, BookOpen, TestTube, Loader2, SearchX
 } from 'lucide-react';
 
 interface SaaSPlatformViewProps {
@@ -48,6 +49,12 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
 
   // Saved Target Vault State (Bookmark) — Supabase DB 기반, 계정별로 동기화
   const [savedVaultTargets, setSavedVaultTargets] = useState<string[]>([]);
+
+  // 큐레이션된 17개 표적 목록에 없는 유전자를 검색했을 때 UniProt/AlphaFold DB/ChEMBL/
+  // Open Targets/PubMed/ClinicalTrials.gov를 실시간으로 조회한 결과.
+  const [liveLookupResult, setLiveLookupResult] = useState<GeneLookupResult | null>(null);
+  const [isLiveLookupLoading, setIsLiveLookupLoading] = useState<boolean>(false);
+  const [liveLookupError, setLiveLookupError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user.id === 'guest') {
@@ -120,10 +127,8 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
     window.print();
   };
 
-  if (activeCategory === 'overview_about') {
-    return <AboutServiceOverview onNavigateDepartment={onSelectCategory} onOpenCheckout={onOpenCheckout} onOpenPlanDetails={onOpenPlanDetails} />;
-  }
-
+  // currentTargetMap/filteredTargetEntries는 아래 실시간 조회 useEffect가 참조하므로
+  // early return(overview_about)보다 먼저 계산해야 Hooks 호출 순서가 매 렌더마다 동일하게 유지된다.
   const currentTargetMap = getDepartmentTargetMap(activeCategory);
 
   const filteredTargetEntries = Object.entries(currentTargetMap).filter(([key, t]) => {
@@ -136,6 +141,50 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
       t.targetId.toLowerCase().includes(q)
     );
   });
+
+  // 큐레이션된 목록에 검색어와 일치하는 표적이 하나도 없으면, 잠시 후(타이핑이 멈추면)
+  // UniProt 등 실제 공개 데이터베이스를 실시간으로 조회한다. 매 키 입력마다 6개
+  // 외부 API를 다 호출하면 낭비이므로 600ms 디바운스를 둔다.
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+    if (activeCategory === 'overview_about' || filteredTargetEntries.length > 0 || trimmed.length < 2) {
+      setLiveLookupResult(null);
+      setLiveLookupError(null);
+      setIsLiveLookupLoading(false);
+      return;
+    }
+
+    setIsLiveLookupLoading(true);
+    setLiveLookupError(null);
+    const timer = setTimeout(() => {
+      fetchLiveGeneLookup(trimmed)
+        .then(result => {
+          setLiveLookupResult(result);
+          result.sourcesUsed.forEach(skillId => {
+            saveSkillAuditLogDB({
+              user_id: user.id !== 'guest' ? user.id : undefined,
+              skill_id: skillId,
+              skill_name: skillId,
+              category: activeCategory,
+              query_target: trimmed,
+              execution_time_ms: 0,
+              is_bookmarked: false
+            });
+          });
+        })
+        .catch(err => {
+          setLiveLookupError(err instanceof Error ? err.message : '실시간 조회에 실패했습니다.');
+        })
+        .finally(() => setIsLiveLookupLoading(false));
+    }, 600);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, activeCategory, filteredTargetEntries.length]);
+
+  if (activeCategory === 'overview_about') {
+    return <AboutServiceOverview onNavigateDepartment={onSelectCategory} onOpenCheckout={onOpenCheckout} onOpenPlanDetails={onOpenPlanDetails} />;
+  }
 
   // 한도 소진 시: 플랜별 안내 메시지 + 업그레이드 유도
   const promptQuotaExceeded = (plan: UserPlanTier, cap: number) => {
@@ -460,6 +509,144 @@ Status: High Freedom to Operate (FTO Clear)
               );
             })}
           </div>
+
+          {/* 큐레이션 목록에 없는 유전자 검색 시: 실시간 공개 DB 조회 패널 */}
+          {filteredTargetEntries.length === 0 && searchQuery.trim().length >= 2 && (
+            <div style={{ marginTop: '18px', padding: '20px 24px', borderRadius: '16px', border: '1px solid rgba(76, 215, 246, 0.3)', background: 'rgba(23, 31, 51, 0.7)' }}>
+              {isLiveLookupLoading && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#4cd7f6', fontWeight: 700, fontSize: '0.9rem' }}>
+                  <Loader2 size={18} className="spin" /> {t('livelookup.loading', '실시간 데이터베이스 조회 중...')}
+                </div>
+              )}
+
+              {!isLiveLookupLoading && liveLookupError && (
+                <div style={{ color: '#ff8080', fontSize: '0.85rem', fontWeight: 700 }}>{liveLookupError}</div>
+              )}
+
+              {!isLiveLookupLoading && !liveLookupError && liveLookupResult && !liveLookupResult.resolved && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#bcc9cd', fontSize: '0.85rem' }}>
+                  <SearchX size={18} /> {t('livelookup.not_found', '조회 결과가 없습니다. 정확한 유전자명(예: EGFR, TP53)으로 다시 검색해 보세요.')}
+                </div>
+              )}
+
+              {!isLiveLookupLoading && !liveLookupError && liveLookupResult?.resolved && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+                    <Microscope size={18} color="#4cd7f6" />
+                    <span style={{ fontWeight: 900, color: '#fff', fontSize: '1rem' }}>
+                      {t('livelookup.title', '실시간 데이터베이스 조회 결과')}: {liveLookupResult.symbol}
+                    </span>
+                  </div>
+
+                  {liveLookupResult.uniprot && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>{liveLookupResult.uniprot.proteinName}</div>
+                      <div style={{ fontSize: '0.78rem', color: '#8899a6', margin: '2px 0 8px 0' }}>
+                        {liveLookupResult.uniprot.geneName} · {liveLookupResult.uniprot.organism} · UniProt {liveLookupResult.uniprot.accession}
+                      </div>
+                      {liveLookupResult.uniprot.functionSummary && (
+                        <div style={{ fontSize: '0.82rem', color: '#dae2fd', lineHeight: 1.5 }}>
+                          {liveLookupResult.uniprot.functionSummary.slice(0, 320)}
+                          {liveLookupResult.uniprot.functionSummary.length > 320 ? '…' : ''}
+                        </div>
+                      )}
+                      {liveLookupResult.alphafold && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpen3DViewer(
+                            `AF-${liveLookupResult.uniprot!.accession}-F1`,
+                            liveLookupResult.uniprot!.proteinName,
+                            liveLookupResult.uniprot!.accession
+                          )}
+                          style={{
+                            marginTop: '10px', padding: '6px 14px', borderRadius: '8px', border: 'none',
+                            background: '#4cd7f6', color: '#000', fontWeight: 800, fontSize: '0.78rem',
+                            display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
+                          }}
+                        >
+                          <Box size={14} /> {t('livelookup.view_structure', 'AlphaFold 구조 보기')} (pLDDT {liveLookupResult.alphafold.avgPlddt.toFixed(1)})
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+                    {liveLookupResult.openTargets && liveLookupResult.openTargets.associatedDiseases.rows.length > 0 && (
+                      <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#4cd7f6', marginBottom: '8px' }}>
+                          {t('livelookup.disease_assoc', '질환 연관도')} (Open Targets)
+                        </div>
+                        {liveLookupResult.openTargets.associatedDiseases.rows.map((d, i) => (
+                          <div key={i} style={{ fontSize: '0.78rem', color: '#dae2fd', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <span>{d.diseaseName}</span>
+                            <span style={{ color: '#8899a6' }}>{(d.score * 100).toFixed(0)}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {liveLookupResult.chembl && liveLookupResult.chembl.activities.length > 0 && (
+                      <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#4cd7f6', marginBottom: '8px' }}>
+                          <TestTube size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                          {t('livelookup.known_compounds', '알려진 화합물')} (ChEMBL)
+                        </div>
+                        {liveLookupResult.chembl.activities.slice(0, 4).map((a, i) => (
+                          <div key={i} style={{ fontSize: '0.78rem', color: '#dae2fd', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <span>{a.moleculeChemblId}</span>
+                            <span style={{ color: '#8899a6' }}>{a.standardValue ? `${a.standardValue} ${a.standardUnits || ''}` : '—'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {liveLookupResult.pubmed && liveLookupResult.pubmed.topArticles.length > 0 && (
+                      <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#4cd7f6', marginBottom: '8px' }}>
+                          <BookOpen size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                          {t('livelookup.related_papers', '관련 논문')} (PubMed {liveLookupResult.pubmed.totalCount.toLocaleString()}{t('livelookup.count_suffix', '건')})
+                        </div>
+                        {liveLookupResult.pubmed.topArticles.map(a => (
+                          <a
+                            key={a.pmid}
+                            href={`https://pubmed.ncbi.nlm.nih.gov/${a.pmid}/`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ display: 'block', fontSize: '0.76rem', color: '#4cd7f6', marginBottom: '5px', textDecoration: 'none' }}
+                          >
+                            {a.title}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+
+                    {liveLookupResult.clinicalTrials && liveLookupResult.clinicalTrials.topTrials.length > 0 && (
+                      <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#4cd7f6', marginBottom: '8px' }}>
+                          {t('livelookup.clinical_trials', '관련 임상시험')} (ClinicalTrials.gov {liveLookupResult.clinicalTrials.totalCount.toLocaleString()}{t('livelookup.count_suffix', '건')})
+                        </div>
+                        {liveLookupResult.clinicalTrials.topTrials.map(tr => (
+                          <a
+                            key={tr.nctId}
+                            href={`https://clinicaltrials.gov/study/${tr.nctId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ display: 'block', fontSize: '0.76rem', color: '#4cd7f6', marginBottom: '5px', textDecoration: 'none' }}
+                          >
+                            {tr.briefTitle}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ marginTop: '14px', fontSize: '0.7rem', color: '#8899a6' }}>
+                    {t('livelookup.disclosure', '이 정보는 UniProt, AlphaFold DB, ChEMBL, Open Targets, PubMed, ClinicalTrials.gov 공개 데이터베이스에서 실시간으로 조회되었습니다.')}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

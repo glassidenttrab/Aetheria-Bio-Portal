@@ -120,6 +120,15 @@ h1, h2, h3, h4 {
   animation: pulseGlow 2.5s infinite ease-in-out;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
 /* Custom Scrollbar for sleek UI */
 ::-webkit-scrollbar {
   width: 6px;

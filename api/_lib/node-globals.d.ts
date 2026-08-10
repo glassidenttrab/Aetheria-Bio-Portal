@@ -35,3 +35,6 @@ declare const console: {
   warn(...args: unknown[]): void;
   error(...args: unknown[]): void;
 };
+
+declare function setTimeout(callback: () => void, ms: number): number;
+declare function clearTimeout(id: number): void;

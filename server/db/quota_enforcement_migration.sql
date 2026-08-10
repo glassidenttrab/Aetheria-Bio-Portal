@@ -132,9 +132,12 @@ BEGIN
     RETURN;
   END IF;
 
-  UPDATE public.users
-    SET queries_remaining = queries_remaining - 1, updated_at = NOW()
-    WHERE id = v_user.id
+  -- 우변의 queries_remaining을 그대로 두면, 이 함수의 RETURNS TABLE이 만드는
+  -- 동명의 PL/pgSQL 변수와 충돌해 "column reference is ambiguous"(42702) 오류가
+  -- 난다. 테이블 별칭(u)으로 명확히 컬럼임을 지정한다.
+  UPDATE public.users u
+    SET queries_remaining = u.queries_remaining - 1, updated_at = NOW()
+    WHERE u.id = v_user.id
     RETURNING * INTO v_user;
 
   RETURN QUERY SELECT true, v_user.plan::TEXT, v_user.queries_remaining, v_cap;

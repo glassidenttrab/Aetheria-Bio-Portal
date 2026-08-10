@@ -70,8 +70,44 @@
 
 ### P2 — 출시 전 최종 점검
 
-5. Supabase 대시보드에서 `pg_policies` 조회로 RLS 정책이 실제로 위 마이그레이션대로 적용돼 있는지 최종 확인 (지금까지의 대화만으로는 "적용했다"는 보고를 신뢰하고 있을 뿐, 직접 조회 결과는 아직 못 봤습니다).
-6. 두 감사 문서의 "출시 승인 체크리스트" 항목을 이 문서의 재검증 결과로 갱신해, 실제 출시 가능 여부를 재산정.
+5. **RLS/함수 적용 상태 라이브 확인** — 아래 SQL을 Supabase 대시보드 > SQL Editor에서 실행해 결과를 붙여넣어 주시면, 지금까지의 "적용했다"는 구두 확인을 실제 DB 상태로 교차 검증하겠습니다. 제게는 DB에 직접 접속할 방법이 없어 이 확인은 대표님만 하실 수 있습니다.
+
+   ```sql
+   -- (1) 전면 공개(USING true) 정책이 하나도 남아있지 않아야 함
+   SELECT tablename, policyname, cmd, qual, with_check
+     FROM pg_policies
+    WHERE schemaname = 'public'
+    ORDER BY tablename, policyname;
+
+   -- (2) 이번 세션에서 새로 만든 함수/컬럼이 실제로 존재하는지
+   SELECT proname FROM pg_proc
+    WHERE pronamespace = 'public'::regnamespace
+      AND proname IN ('consume_quota', 'get_quota_status', 'expire_stale_subscriptions',
+                       'apply_paid_subscription', 'is_current_user_admin', 'guard_entitlement_columns');
+
+   SELECT column_name FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'users'
+      AND column_name IN ('quota_period_key', 'is_admin', 'auth_uid');
+   ```
+
+6. **출시 승인 체크리스트 재산정** — `PRODUCTION_READINESS_AND_SUBSCRIPTION_AUDIT_2026-08-10.md` 10장의 12개 항목을 현재 코드 기준으로 재평가한 결과는 아래와 같습니다.
+
+   | # | 항목 | 상태 | 근거 |
+   |---|---|---|---|
+   | 1 | 노출된 OAuth Secret 폐기 및 새 Secret 적용 | ✅ 완료 | 이전 세션에서 재발급·교체 완료 |
+   | 2 | 운영 DB에 전면 공개 RLS 정책 없음 | 🔵 확인 대기 | 코드(마이그레이션 파일)는 준비돼 있으나, 실제 적용 여부는 위 (1)번 쿼리 결과로만 확정 가능 |
+   | 3 | 일반 사용자의 `plan`·`queries_remaining` 직접 변경 차단 | ✅ 완료 (코드) / 🔵 확인 대기 (라이브) | `guard_entitlement_columns()`가 둘 다 잠금. 다만 이 함수가 실제로 배포된 버전인지는 위 (2)번 쿼리로 확인 필요 |
+   | 4 | PayPal 거래 서버 검증 및 서명 검증 웹훅 운영 | 🟡 부분 완료 | 서버 측 주문 캡처·금액 대조(`api/paypal/capture-order.ts`)는 있음. 다만 PayPal Webhook(환불/분쟁/구독취소 등 비동기 이벤트 수신)은 아직 없음 — 사용자가 PayPal 쪽에서 환불받아도 우리 DB의 plan은 그대로 유지됨 |
+   | 5 | 취소·환불·분쟁·만료 시 권한 회수 자동화 | 🟡 부분 완료 | "만료"는 이번에 자동화(`expire_stale_subscriptions()` + Vercel Cron). 취소·환불·분쟁은 여전히 수동 처리 필요(4번과 동일한 웹훅 부재가 원인) |
+   | 6 | 서버 측 원자적 쿼터 차감과 Rate Limit | 🟡 부분 완료 | 쿼터 차감은 완료(`consume_quota()`). Rate Limit(초당/분당 요청 제한)은 미구현 — `.env.example`의 Upstash Redis도 "현재 미사용"으로 표시된 상태 |
+   | 7 | 결제·권한·RLS 공격 시나리오 테스트 통과 | 🔴 미착수 | 자동화된 보안/침투 테스트 스위트 없음 |
+   | 8 | 핵심 분석이 실제 데이터/데모임을 오인 불가하게 표시 | 🔴 미착수 | `neuroLongevityEngine.ts`는 유전자별 고정 조회 테이블(정적 데이터)을 반환 — "AI 파이프라인 실행"처럼 보이는 UI 연출과 실제 동작 사이 괴리 있음. `README.md`엔 이미 정직하게 명시되어 있으나, 실제 결제 후 화면(제품 UI) 안에는 동일한 고지가 없음 |
+   | 9 | 마케팅·가격·쿼터·약관 표현이 코드와 일치 | 🟡 부분 완료 | Enterprise 가격 표기 불일치는 이번에 수정(P0). 이용약관의 환불/해지 조항이 실제 운영 방식(4·5번 참고)과 일치하는지는 별도 검토 필요 |
+   | 10 | CI에서 테스트·lint·build·secret scan 필수 통과 | 🔴 미착수 | `.github/workflows` 디렉터리 자체가 없음 — CI 파이프라인 미구성 |
+   | 11 | 운영 모니터링, 백업·복구, 장애 대응 담당자·절차 확정 | 🔴 미착수 | Sentry는 코드상 연동돼 있으나 `VITE_SENTRY_DSN` 미설정으로 비활성 상태. 백업/장애 대응 문서 없음 |
+   | 12 | 개인정보 삭제·내보내기·보존 절차 확정 | 🔴 미착수 | 관련 기능/문서 확인되지 않음 |
+
+   **요약**: 12개 중 1개 완료, 2개는 코드는 준비됐지만 라이브 확인 대기, 4개는 부분 완료, 5개는 미착수. 오늘 진행한 P0~P1 조치로 이 문서 작성 시점(commit `693c62f`) 대비 크게 개선됐지만, 실제 결제를 여는 것은 여전히 이르다고 판단됩니다 — 특히 7(공격 시나리오 테스트)·8(정적 데이터 고지)·10(CI)·11(장애 대응)·12(개인정보 절차)는 손도 대지 않은 상태입니다.
 
 ---
 

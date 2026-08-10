@@ -96,7 +96,7 @@
    |---|---|---|---|
    | 1 | 노출된 OAuth Secret 폐기 및 새 Secret 적용 | ✅ 완료 | 이전 세션에서 재발급·교체 완료 |
    | 2 | 운영 DB에 전면 공개 RLS 정책 없음 | ✅ 완료 (2026-08-10 라이브 확인) | 대표님이 실행한 `pg_policies` 결과로 확인 — `USING (true)` 전면 공개 정책 없음, `users_update_own_or_admin`의 `with_check`가 셀프 관리자 승격 차단 중, `skill_audit_logs_own_or_admin`도 `user_id` 소유 조건으로 걸려 있음(P0 수정이 실제로 필요했던 이유 재확인) |
-   | 3 | 일반 사용자의 `plan`·`queries_remaining` 직접 변경 차단 | ✅ 완료 (코드) / 🟡 함수 존재만 미확인 | `guard_entitlement_columns()`가 둘 다 잠금. `quota_period_key` 컬럼 존재는 라이브로 확인됨(→ `quota_enforcement_migration.sql` 적용됨을 강하게 시사) — 함수 6종 존재 여부(`pg_proc` 쿼리)는 아직 미확인 |
+   | 3 | 일반 사용자의 `plan`·`queries_remaining` 직접 변경 차단 | ✅ 완료 (2026-08-10 라이브 확인) | 대표님이 실행한 `pg_proc` 쿼리로 `apply_paid_subscription`, `consume_quota`, `expire_stale_subscriptions`, `get_quota_status`, `guard_entitlement_columns`, `is_current_user_admin` 6개 함수 전부 존재 확인. `quota_enforcement_migration.sql`이 완전히 적용됨 |
    | 4 | PayPal 거래 서버 검증 및 서명 검증 웹훅 운영 | 🟡 부분 완료 | 서버 측 주문 캡처·금액 대조(`api/paypal/capture-order.ts`)는 있음. 다만 PayPal Webhook(환불/분쟁/구독취소 등 비동기 이벤트 수신)은 아직 없음 — 사용자가 PayPal 쪽에서 환불받아도 우리 DB의 plan은 그대로 유지됨 |
    | 5 | 취소·환불·분쟁·만료 시 권한 회수 자동화 | 🟡 부분 완료 | "만료"는 이번에 자동화(`expire_stale_subscriptions()` + Vercel Cron). 취소·환불·분쟁은 여전히 수동 처리 필요(4번과 동일한 웹훅 부재가 원인) |
    | 6 | 서버 측 원자적 쿼터 차감과 Rate Limit | 🟡 부분 완료 | 쿼터 차감은 완료(`consume_quota()`). Rate Limit(초당/분당 요청 제한)은 미구현 — `.env.example`의 Upstash Redis도 "현재 미사용"으로 표시된 상태 |
@@ -107,7 +107,7 @@
    | 11 | 운영 모니터링, 백업·복구, 장애 대응 담당자·절차 확정 | 🔴 미착수 | Sentry는 코드상 연동돼 있으나 `VITE_SENTRY_DSN` 미설정으로 비활성 상태. 백업/장애 대응 문서 없음 |
    | 12 | 개인정보 삭제·내보내기·보존 절차 확정 | 🔴 미착수 | 관련 기능/문서 확인되지 않음 |
 
-   **요약**: 12개 중 1개 완료, 2개는 코드는 준비됐지만 라이브 확인 대기, 4개는 부분 완료, 5개는 미착수. 오늘 진행한 P0~P1 조치로 이 문서 작성 시점(commit `693c62f`) 대비 크게 개선됐지만, 실제 결제를 여는 것은 여전히 이르다고 판단됩니다 — 특히 7(공격 시나리오 테스트)·8(정적 데이터 고지)·10(CI)·11(장애 대응)·12(개인정보 절차)는 손도 대지 않은 상태입니다.
+   **요약**: 12개 중 3개 완료(라이브 DB로 확인됨), 4개는 부분 완료, 5개는 미착수. 오늘 진행한 P0~P1 조치와 대표님의 라이브 확인으로 이 문서 작성 시점(commit `693c62f`) 대비 크게 개선됐지만, 실제 결제를 여는 것은 여전히 이르다고 판단됩니다 — 특히 7(공격 시나리오 테스트)·8(정적 데이터 고지)·10(CI)·11(장애 대응)·12(개인정보 절차)는 손도 대지 않은 상태입니다.
 
 ---
 

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from './contexts/AuthContext';
-import { fetchUserProfileDB, upsertUserProfileDB, recordSubscriptionDB } from './services/supabaseService';
+import { fetchUserProfileDB, upsertUserProfileDB } from './services/supabaseService';
 import { PLAN_QUOTA_CAP } from './utils/quota';
 
 const AppInner: React.FC = () => {
@@ -149,20 +149,20 @@ const AppInner: React.FC = () => {
     setIsCheckoutOpen(true);
   };
 
+  /**
+   * 결제 성공 처리.
+   *
+   * 플랜 부여와 구독 이력 기록은 이미 서버(/api/paypal/capture-order)에서
+   * PayPal 결제를 직접 검증한 뒤 완료된 상태다. 여기서는 서버가 확정한 값을
+   * 화면 상태에 반영만 한다. 클라이언트가 DB의 plan을 쓰지 않는다.
+   */
   const handlePaymentSuccess = (newPlan: UserPlanTier, receipt: PaymentReceipt) => {
-    const remaining = PLAN_QUOTA_CAP[newPlan];
     setUser((prev) => ({
       ...prev,
       plan: newPlan,
-      queriesRemaining: remaining
+      queriesRemaining: receipt.queriesRemaining ?? PLAN_QUOTA_CAP[newPlan]
     }));
     setLastReceipt(receipt);
-    recordSubscriptionDB({
-      email: user.email,
-      tier: newPlan,
-      amountUSD: receipt.amountUSD,
-      isAnnual: receipt.isAnnual
-    });
   };
 
   const categoryHeaderMeta: Record<SaasCategory, { icon: React.ReactNode; label: string }> = {

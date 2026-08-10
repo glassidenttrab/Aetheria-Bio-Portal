@@ -3,7 +3,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { UserProfile, UserPlanTier, PaymentReceipt } from '../types';
 import { PayPalCheckoutButton } from './payment/PayPalCheckoutButton';
 import { SAAS_PAYPAL_PRODUCTS } from '../lib/paypal';
-import { CheckCircle2, X, Zap, Crown } from 'lucide-react';
+import { captureAndVerifyPayPalOrder } from '../services/paymentService';
+import { CheckCircle2, X, Zap, Crown, AlertTriangle } from 'lucide-react';
 
 interface SubscriptionCheckoutModalProps {
   isOpen: boolean;
@@ -32,12 +33,16 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
   const [receipt, setReceipt] = useState<PaymentReceipt | null>(null);
   const [tier, setTier] = useState<UserPlanTier>(selectedTier);
   const [localIsAnnual, setLocalIsAnnual] = useState(isAnnual);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setTier(selectedTier);
       setLocalIsAnnual(isAnnual);
       setReceipt(null);
+      setIsVerifying(false);
+      setErrorMessage(null);
     }
   }, [isOpen, selectedTier, isAnnual]);
 
@@ -45,13 +50,12 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
 
   const isLoggedIn = user && user.id !== 'guest';
 
-  // Pro 구독자가 Enterprise로 업그레이드하는 특수 흐름(선택한 플랜이 실제로 Enterprise일 때만)에서는
-  // 플랜/결제주기 선택 없이 기존의 일할 차액 정산(Proration) 계산만 그대로 적용한다.
-  // (주의: user.plan === 'pro'만으로 판단하면, 이미 Pro인 사용자가 다른 사유로 모달을 열었을 때도
-  // 선택 여부와 무관하게 무조건 Enterprise 결제로 강제 전환되는 버그가 있었음 — tier 조건 추가로 수정.)
-  const isProToEnterpriseUpgrade = Boolean(user && user.plan === 'pro' && tier === 'enterprise');
-  const effectiveTier: UserPlanTier = isProToEnterpriseUpgrade ? 'enterprise' : tier;
-  const effectiveIsAnnual = isProToEnterpriseUpgrade ? false : localIsAnnual;
+  // Pro → Enterprise 일할 차액 정산(Proration)은 제거했다. 기존 구현은 실제
+  // 구독 시작일과 무관하게 잔여 20일을 상수로 가정해 항상 $326.67을 깎아줬고,
+  // 서버 가격표에 없는 임의 금액이라 결제 검증 자체가 불가능하다. 정확한
+  // 비례 정산은 PayPal 정기구독 도입 시 함께 다룬다.
+  const effectiveTier: UserPlanTier = tier;
+  const effectiveIsAnnual = localIsAnnual;
 
   const planInfo: Record<UserPlanTier, { name: string; desc: string }> = {
     free: { name: t('plan.free_title', 'Free Starter Tier'), desc: t('plan.free_desc', '기본 단백질 3D 뷰어 & 기초 데이터') },
@@ -63,25 +67,43 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
   const displayPrice = isPaidTier ? (effectiveIsAnnual ? ANNUAL_TOTAL[effectiveTier] : MONTHLY_PRICE[effectiveTier]) : 0;
 
   const paypalProduct = isPaidTier ? SAAS_PAYPAL_PRODUCTS[effectiveTier] : SAAS_PAYPAL_PRODUCTS.pro;
+  const finalPayablePrice = displayPrice;
 
-  // Pro ➔ Enterprise 일할 차액 정산 (Proration) 산출
-  const proDaysRemaining = 20; // 30일 주기 중 미사용 잔여 20일 가정
-  const proDailyRate = 490 / 30; // $16.333/일
-  const proUnusedCredit = isProToEnterpriseUpgrade ? Math.round(proDailyRate * proDaysRemaining * 100) / 100 : 0; // $326.67
-  const finalPayablePrice = isProToEnterpriseUpgrade ? Math.round((2500 - proUnusedCredit) * 100) / 100 : displayPrice;
+  /**
+   * PayPal이 주문을 승인하면 orderId만 서버로 넘긴다. 실제 캡처·금액 검증·
+   * 플랜 부여는 서버가 수행하며, 서버가 성공을 돌려준 뒤에만 화면을 유료
+   * 상태로 바꾼다. 검증에 실패하면 플랜은 그대로 두고 오류만 표시한다.
+   */
+  const handleApproveOrder = async (orderId: string) => {
+    if (!isPaidTier) return;
+    setIsVerifying(true);
+    setErrorMessage(null);
+    try {
+      const verified = await captureAndVerifyPayPalOrder({
+        orderId,
+        tier: effectiveTier,
+        isAnnual: effectiveIsAnnual
+      });
 
-  // PayPal 승인 성공
-  const handlePayPalSuccess = (details: any) => {
-    const newReceipt: PaymentReceipt = {
-      transactionId: details.id || `PAYPAL-${Date.now()}`,
-      planTier: effectiveTier,
-      amountUSD: finalPayablePrice,
-      timestamp: new Date().toLocaleString(),
-      cardLast4: 'PAYPAL',
-      isAnnual: effectiveIsAnnual
-    };
-    setReceipt(newReceipt);
-    onPaymentSuccess(effectiveTier, newReceipt);
+      const newReceipt: PaymentReceipt = {
+        transactionId: verified.transactionId,
+        planTier: verified.plan,
+        amountUSD: verified.amountUSD,
+        timestamp: new Date().toLocaleString(),
+        cardLast4: 'PAYPAL',
+        isAnnual: verified.isAnnual,
+        expiresAt: verified.expiresAt,
+        queriesRemaining: verified.queriesRemaining
+      };
+      setReceipt(newReceipt);
+      onPaymentSuccess(verified.plan, newReceipt);
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : '결제 검증에 실패했습니다. 고객지원에 문의해 주세요.'
+      );
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   return (
@@ -189,80 +211,76 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                 </div>
               )}
 
-              {/* 플랜 선택 (Pro/Enterprise) — 기존 Pro 구독자의 Enterprise 업그레이드 흐름에서는 고정 */}
-              {!isProToEnterpriseUpgrade && (
-                <div style={{ marginBottom: '16px' }}>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#bcc9cd', marginBottom: '10px' }}>
-                    {t('checkout.plan_select', '플랜 선택 (Select Plan)')}
-                  </div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setTier('pro')}
-                      style={{
-                        flex: 1, padding: '12px', borderRadius: '12px', cursor: 'pointer',
-                        border: tier === 'pro' ? '2px solid #4cd7f6' : '1px solid rgba(255,255,255,0.15)',
-                        background: tier === 'pro' ? 'rgba(76, 215, 246, 0.15)' : 'rgba(23, 31, 51, 0.6)',
-                        color: tier === 'pro' ? '#4cd7f6' : '#bcc9cd', fontWeight: 800, fontSize: '0.85rem',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-                      }}
-                    >
-                      <Zap size={15} /> Pro (${MONTHLY_PRICE.pro})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTier('enterprise')}
-                      style={{
-                        flex: 1, padding: '12px', borderRadius: '12px', cursor: 'pointer',
-                        border: tier === 'enterprise' ? '2px solid #ffd700' : '1px solid rgba(255,255,255,0.15)',
-                        background: tier === 'enterprise' ? 'rgba(255, 215, 0, 0.15)' : 'rgba(23, 31, 51, 0.6)',
-                        color: tier === 'enterprise' ? '#ffd700' : '#bcc9cd', fontWeight: 800, fontSize: '0.85rem',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-                      }}
-                    >
-                      <Crown size={15} /> Enterprise (${MONTHLY_PRICE.enterprise})
-                    </button>
-                  </div>
+              {/* 플랜 선택 (Pro/Enterprise) */}
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#bcc9cd', marginBottom: '10px' }}>
+                  {t('checkout.plan_select', '플랜 선택 (Select Plan)')}
                 </div>
-              )}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setTier('pro')}
+                    style={{
+                      flex: 1, padding: '12px', borderRadius: '12px', cursor: 'pointer',
+                      border: tier === 'pro' ? '2px solid #4cd7f6' : '1px solid rgba(255,255,255,0.15)',
+                      background: tier === 'pro' ? 'rgba(76, 215, 246, 0.15)' : 'rgba(23, 31, 51, 0.6)',
+                      color: tier === 'pro' ? '#4cd7f6' : '#bcc9cd', fontWeight: 800, fontSize: '0.85rem',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                    }}
+                  >
+                    <Zap size={15} /> Pro (${MONTHLY_PRICE.pro})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTier('enterprise')}
+                    style={{
+                      flex: 1, padding: '12px', borderRadius: '12px', cursor: 'pointer',
+                      border: tier === 'enterprise' ? '2px solid #ffd700' : '1px solid rgba(255,255,255,0.15)',
+                      background: tier === 'enterprise' ? 'rgba(255, 215, 0, 0.15)' : 'rgba(23, 31, 51, 0.6)',
+                      color: tier === 'enterprise' ? '#ffd700' : '#bcc9cd', fontWeight: 800, fontSize: '0.85rem',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                    }}
+                  >
+                    <Crown size={15} /> Enterprise (${MONTHLY_PRICE.enterprise})
+                  </button>
+                </div>
+              </div>
 
               {/* 결제 주기 선택 (월간 / 연간 15% 할인) */}
-              {!isProToEnterpriseUpgrade && (
-                <div style={{ marginBottom: '16px' }}>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#bcc9cd', marginBottom: '10px' }}>
-                    {t('checkout.billing_cycle', '결제 주기 (Billing Cycle)')}
-                  </div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setLocalIsAnnual(false)}
-                      style={{
-                        flex: 1, padding: '10px', borderRadius: '12px', cursor: 'pointer',
-                        border: !localIsAnnual ? '2px solid #4cd7f6' : '1px solid rgba(255,255,255,0.15)',
-                        background: !localIsAnnual ? 'rgba(76, 215, 246, 0.15)' : 'rgba(23, 31, 51, 0.6)',
-                        color: !localIsAnnual ? '#4cd7f6' : '#bcc9cd', fontWeight: 800, fontSize: '0.82rem'
-                      }}
-                    >
-                      {t('checkout.monthly', '월간')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLocalIsAnnual(true)}
-                      style={{
-                        flex: 1, padding: '10px', borderRadius: '12px', cursor: 'pointer',
-                        border: localIsAnnual ? '2px solid #ffd700' : '1px solid rgba(255,255,255,0.15)',
-                        background: localIsAnnual ? 'rgba(255, 215, 0, 0.15)' : 'rgba(23, 31, 51, 0.6)',
-                        color: localIsAnnual ? '#ffd700' : '#bcc9cd', fontWeight: 800, fontSize: '0.82rem'
-                      }}
-                    >
-                      {t('checkout.annual_discount', '연간 (15% 할인)')}
-                    </button>
-                  </div>
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#bcc9cd', marginBottom: '10px' }}>
+                  {t('checkout.billing_cycle', '결제 주기 (Billing Cycle)')}
                 </div>
-              )}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setLocalIsAnnual(false)}
+                    style={{
+                      flex: 1, padding: '10px', borderRadius: '12px', cursor: 'pointer',
+                      border: !localIsAnnual ? '2px solid #4cd7f6' : '1px solid rgba(255,255,255,0.15)',
+                      background: !localIsAnnual ? 'rgba(76, 215, 246, 0.15)' : 'rgba(23, 31, 51, 0.6)',
+                      color: !localIsAnnual ? '#4cd7f6' : '#bcc9cd', fontWeight: 800, fontSize: '0.82rem'
+                    }}
+                  >
+                    {t('checkout.monthly', '월간')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLocalIsAnnual(true)}
+                    style={{
+                      flex: 1, padding: '10px', borderRadius: '12px', cursor: 'pointer',
+                      border: localIsAnnual ? '2px solid #ffd700' : '1px solid rgba(255,255,255,0.15)',
+                      background: localIsAnnual ? 'rgba(255, 215, 0, 0.15)' : 'rgba(23, 31, 51, 0.6)',
+                      color: localIsAnnual ? '#ffd700' : '#bcc9cd', fontWeight: 800, fontSize: '0.82rem'
+                    }}
+                  >
+                    {t('checkout.annual_discount', '연간 (15% 할인)')}
+                  </button>
+                </div>
+              </div>
 
               {/* 주문 요약 카드 */}
-              <div style={{ background: 'rgba(23, 31, 51, 0.8)', padding: '16px 20px', borderRadius: '14px', border: '1px solid rgba(76, 215, 246, 0.3)', marginBottom: isProToEnterpriseUpgrade ? '14px' : '22px' }}>
+              <div style={{ background: 'rgba(23, 31, 51, 0.8)', padding: '16px 20px', borderRadius: '14px', border: '1px solid rgba(76, 215, 246, 0.3)', marginBottom: '22px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff' }}>{currentPlanInfo.name}</div>
@@ -277,36 +295,19 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                 </div>
               </div>
 
-              {/* Pro ➔ Enterprise 일할 차액 정산 (Prorated Breakdown) 명세서 카드 */}
-              {isProToEnterpriseUpgrade && (
+              {errorMessage && (
                 <div style={{
-                  background: 'rgba(255, 215, 0, 0.08)',
-                  border: '1px solid rgba(255, 215, 0, 0.4)',
+                  background: 'rgba(255, 99, 99, 0.1)',
+                  border: '1px solid rgba(255, 99, 99, 0.45)',
                   borderRadius: '14px',
-                  padding: '16px',
-                  marginBottom: '20px'
+                  padding: '14px',
+                  marginBottom: '18px',
+                  display: 'flex',
+                  gap: '10px',
+                  alignItems: 'flex-start'
                 }}>
-                  <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#ffd700', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>🧾</span> Pro ➔ Enterprise 업그레이드 차액 정산 명세서 (Prorated)
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.78rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#bcc9cd' }}>
-                      <span>Enterprise VIP 정상 월 구독료:</span>
-                      <span style={{ color: '#fff', fontWeight: 700 }}>$2,500.00</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#4edea3' }}>
-                      <span>기존 Pro 미사용 잔여 20일 공제 (환불 반영):</span>
-                      <span style={{ fontWeight: 800 }}>- ${proUnusedCredit.toFixed(2)}</span>
-                    </div>
-                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontWeight: 900, color: '#ffd700' }}>
-                      <span>💳 오늘 실결제 차액 금액:</span>
-                      <span>${finalPayablePrice.toFixed(2)}</span>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '0.72rem', color: '#8899a6', marginTop: '8px', lineHeight: '1.35' }}>
-                    * 이중 결제가 발생하지 않도록 기존 Pro 구독의 미사용 남은 기간 가치가 정확히 일할 계산(Proration)되어 차감 승인됩니다.
-                  </div>
+                  <AlertTriangle size={18} color="#ff6363" style={{ flexShrink: 0, marginTop: '1px' }} />
+                  <div style={{ fontSize: '0.8rem', color: '#ffc9c9', lineHeight: 1.45 }}>{errorMessage}</div>
                 </div>
               )}
 
@@ -325,12 +326,38 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
               </div>
 
               <div style={{ marginTop: '16px' }}>
-                <PayPalCheckoutButton
-                  product={paypalProduct}
-                  overridePrice={finalPayablePrice.toFixed(2)}
-                  onSuccess={handlePayPalSuccess}
-                  onError={(err) => alert('PayPal 결제 실패: ' + err)}
-                />
+                {isLoggedIn ? (
+                  <>
+                    <PayPalCheckoutButton
+                      product={paypalProduct}
+                      overridePrice={finalPayablePrice.toFixed(2)}
+                      disabled={isVerifying}
+                      onApproveOrder={handleApproveOrder}
+                      onError={() =>
+                        setErrorMessage('PayPal 결제 처리 중 오류가 발생했습니다. 다시 시도해 주세요.')
+                      }
+                    />
+                    {isVerifying && (
+                      <div style={{ fontSize: '0.78rem', color: '#4cd7f6', textAlign: 'center', marginTop: '10px' }}>
+                        결제를 서버에서 검증하는 중입니다. 창을 닫지 말아 주세요.
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  // 비로그인 상태에서 결제가 승인되면 권한을 붙일 계정이 없어
+                  // "돈은 빠져나갔는데 아무것도 받지 못하는" 상태가 된다.
+                  // 따라서 결제 버튼 자체를 렌더링하지 않는다.
+                  <button
+                    type="button"
+                    onClick={onRequireAuth}
+                    style={{
+                      width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+                      background: '#ffd700', color: '#000', fontWeight: 900, fontSize: '0.9rem', cursor: 'pointer'
+                    }}
+                  >
+                    {t('checkout.btn_login_to_pay', '로그인하고 결제 진행하기')}
+                  </button>
+                )}
               </div>
             </>
           )}

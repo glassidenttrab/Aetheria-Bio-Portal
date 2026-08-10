@@ -153,37 +153,19 @@ export async function fetchSkillAuditLogsDB(): Promise<SkillAuditLogItem[]> {
 }
 
 /**
- * 5. Record Subscription Payment History in Supabase DB
+ * 5. (제거됨) 클라이언트에서의 구독 기록 / 플랜 변경
+ *
+ * 예전 recordSubscriptionDB는 브라우저에서 직접 users.plan을 올리고
+ * subscriptions 행을 넣었다. 결제 사실을 서버가 전혀 확인하지 않았기 때문에
+ * 결제 없이 상위 플랜을 취득할 수 있었고, user_id 없이 insert하는 탓에 RLS를
+ * 조이는 순간 결제 이력이 조용히 저장되지 않는 문제도 있었다.
+ *
+ * 이제 이 역할은 서버가 담당한다.
+ *   - 엔드포인트: api/paypal/capture-order.ts
+ *   - DB 함수:   server/db/payment_verification_migration.sql 의
+ *                apply_paid_subscription()
+ * 클라이언트에서는 src/services/paymentService.ts를 사용할 것.
  */
-export async function recordSubscriptionDB(sub: {
-  email: string;
-  tier: UserPlanTier;
-  amountUSD: number;
-  isAnnual?: boolean;
-  stripeCustomerId?: string;
-}): Promise<boolean> {
-  try {
-    // Update user plan in DB
-    await upsertUserProfileDB({ email: sub.email, plan: sub.tier, queriesRemaining: PLAN_QUOTA_CAP[sub.tier] });
-
-    // Insert Subscription record
-    const { error } = await supabase
-      .from('subscriptions')
-      .insert({
-        tier: sub.tier,
-        amount_usd: sub.amountUSD,
-        is_annual: sub.isAnnual || false,
-        stripe_customer_id: sub.stripeCustomerId || `CUST-PAYPAL-${Date.now()}`,
-        status: 'active',
-        started_at: new Date().toISOString(),
-      });
-
-    return !error;
-  } catch (err) {
-    console.warn('Supabase subscription record exception:', err);
-    return false;
-  }
-}
 
 /**
  * 6. Fetch API Keys from Supabase DB

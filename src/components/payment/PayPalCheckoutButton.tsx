@@ -5,17 +5,23 @@ import { PayPalSaaSProduct } from '../../lib/paypal';
 interface PayPalCheckoutButtonProps {
   product: PayPalSaaSProduct;
   overridePrice?: number | string;
-  onSuccess: (details: any) => void;
+  /**
+   * 결제 승인(orderID 확보) 시점에 호출된다. 캡처는 브라우저가 아니라 서버가
+   * 수행하므로, 이 콜백 안에서 서버 검증을 끝낸 뒤 resolve해야 한다.
+   */
+  onApproveOrder: (orderId: string) => Promise<void>;
   onError?: (error: any) => void;
   onCancel?: () => void;
+  disabled?: boolean;
 }
 
 export const PayPalCheckoutButton: React.FC<PayPalCheckoutButtonProps> = ({
   product,
   overridePrice,
-  onSuccess,
+  onApproveOrder,
   onError,
   onCancel,
+  disabled = false,
 }) => {
   const finalPriceValue = overridePrice !== undefined ? String(overridePrice) : product.price;
 
@@ -37,6 +43,7 @@ export const PayPalCheckoutButton: React.FC<PayPalCheckoutButtonProps> = ({
         <span>🧪</span> Sandbox Test Environment Active (가상 테스트 결제)
       </div>
       <PayPalButtons
+        disabled={disabled}
         style={{
           layout: 'vertical',
           color: 'gold',
@@ -65,11 +72,13 @@ export const PayPalCheckoutButton: React.FC<PayPalCheckoutButtonProps> = ({
             },
           });
         }}
-        onApprove={async (_data, actions) => {
-          if (actions.order) {
-            const details = await actions.order.capture();
-            onSuccess(details);
+        onApprove={async (data) => {
+          // actions.order.capture()를 브라우저에서 호출하지 않는다. 캡처와 금액
+          // 검증, 플랜 부여는 모두 서버에서 이뤄져야 위변조가 불가능하다.
+          if (!data.orderID) {
+            throw new Error('PayPal 주문 번호를 확인할 수 없습니다.');
           }
+          await onApproveOrder(data.orderID);
         }}
         onError={(err) => {
           console.error('[PayPal] Error:', err);

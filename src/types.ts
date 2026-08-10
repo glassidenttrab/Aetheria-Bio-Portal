@@ -78,6 +78,10 @@ export interface PaymentReceipt {
   timestamp: string;
   cardLast4: string;
   isAnnual: boolean;
+  /** 서버가 부여한 이용 만료 시각. 자동 갱신이 없으므로 이 시점에 free로 회수된다. */
+  expiresAt?: string | null;
+  /** 서버가 확정한 잔여 쿼터. 클라이언트가 임의로 계산하지 않는다. */
+  queriesRemaining?: number;
 }
 
 export interface SenoScanAuditResult {

@@ -33,11 +33,22 @@ AS $$
   );
 $$;
 
--- 2. 기존의 전면 공개 정책 제거
+-- 2. 기존 정책 제거
+--    전면 공개 정책뿐 아니라 이 파일이 만드는 정책들도 함께 DROP한다.
+--    PostgreSQL에는 CREATE POLICY IF NOT EXISTS가 없어서, 이렇게 먼저
+--    지워두지 않으면 두 번째 실행부터 42710(already exists)으로 실패한다.
 DROP POLICY IF EXISTS "Public Read/Write for Users" ON public.users;
 DROP POLICY IF EXISTS "Public Read/Write for Subscriptions" ON public.subscriptions;
 DROP POLICY IF EXISTS "Public Read/Write for API Keys" ON public.api_keys;
 DROP POLICY IF EXISTS "Public Read/Write for Audit Logs" ON public.skill_audit_logs;
+
+DROP POLICY IF EXISTS "users_insert_signup" ON public.users;
+DROP POLICY IF EXISTS "users_select_own_or_admin" ON public.users;
+DROP POLICY IF EXISTS "users_update_own_or_admin" ON public.users;
+DROP POLICY IF EXISTS "subscriptions_select_own_or_admin" ON public.subscriptions;
+DROP POLICY IF EXISTS "subscriptions_insert_own_or_admin" ON public.subscriptions;
+DROP POLICY IF EXISTS "api_keys_own_or_admin" ON public.api_keys;
+DROP POLICY IF EXISTS "skill_audit_logs_own_or_admin" ON public.skill_audit_logs;
 
 -- 3. users: 회원가입(INSERT)은 누구나, 조회는 본인 행 또는 관리자만.
 --    수정은 본인 행 또는 관리자만 가능하되, WITH CHECK로 "본인이 스스로
@@ -57,11 +68,13 @@ CREATE POLICY "users_update_own_or_admin" ON public.users
   );
 
 -- 4. subscriptions: 본인 구독 이력 또는 관리자만 조회/기록.
---    ⚠️ 참고: plan/queries_remaining과 마찬가지로, 결제 검증을 서버에서
---    하지 않는 현재 구조상 로그인한 사용자가 자신의 subscriptions 행을
---    직접 조작해 가짜 결제 기록을 남기는 것 자체를 DB 레벨에서 막을 수는
---    없다 (실제 권한은 users.plan에서 결정되며, 이 문제는 실서버/결제
---    검증 백엔드가 생기기 전까지는 구조적 한계로 남는다).
+--    ⚠️ 중요: 아래 INSERT 정책은 user_id가 채워진 행만 통과시킨다. 예전
+--    클라이언트 코드(recordSubscriptionDB)는 user_id 없이 insert했기 때문에,
+--    이 정책이 적용된 뒤로는 결제 이력이 조용히 저장되지 않았을 수 있다.
+--    그래서 이 파일은 반드시 payment_verification_migration.sql과 함께
+--    적용해야 한다. 그쪽에서 서버(service_role)가 user_id를 채워 기록하는
+--    apply_paid_subscription() 경로를 만들고, users.plan을 클라이언트가
+--    직접 바꾸지 못하도록 컬럼 단위로 잠근다.
 CREATE POLICY "subscriptions_select_own_or_admin" ON public.subscriptions
   FOR SELECT USING (
     public.is_current_user_admin()
@@ -89,6 +102,15 @@ CREATE POLICY "skill_audit_logs_own_or_admin" ON public.skill_audit_logs
 
 -- 6. 본인 계정을 관리자로 지정 (이메일을 실제 값으로 바꾼 뒤 이 한 줄만 별도 실행)
 -- UPDATE public.users SET is_admin = true WHERE email = 'your-email@example.com';
+
+-- ====================================================================
+-- 적용 결과 확인 — 실행 후 아래 쿼리로 현재 정책 목록을 눈으로 확인할 것.
+-- qual 컬럼에 "true"만 있는 행(전면 공개)이 남아 있으면 안 된다.
+-- ====================================================================
+-- SELECT tablename, policyname, cmd, qual, with_check
+--   FROM pg_policies
+--  WHERE schemaname = 'public'
+--  ORDER BY tablename, policyname;
 
 -- ====================================================================
 -- 롤백: 적용 후 문제가 생기면 아래 주석을 해제해서 실행 — 원래의

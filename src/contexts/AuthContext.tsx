@@ -35,7 +35,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin }
+      options: {
+        redirectTo: window.location.origin,
+        // prompt: 'select_account'가 없으면 브라우저에 이미 로그인된 구글 세션이 있을 때
+        // 계정 선택 화면 없이 그 계정으로 자동 진행되어, "다른 계정으로 가입"이 불가능했다.
+        queryParams: { prompt: 'select_account' }
+      }
     });
     if (error) throw error;
     // 성공 시 Google 계정 선택 페이지로 리다이렉트되며, 돌아온 뒤 onAuthStateChange가 세션을 반영한다.

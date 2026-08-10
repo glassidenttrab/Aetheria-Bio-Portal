@@ -56,9 +56,13 @@
 2. **Enterprise 가격 문구 통일** — 완료. `$1,990` → `$2,500`로 소스 2곳 + i18n 8개 언어 16곳 수정. 부수적으로 `SaaSPlatformView.tsx`의 미번역 하드코딩 confirm 문구도 `t()`로 교체해 다국어 버그까지 함께 해결.
    - typecheck/build/vitest/eslint 전체 통과 확인.
 
-### P1 — 이번 주 내 (유료 서비스로서 치명적, 설계 필요)
+### ✅ P1-A — 완료 (2026-08-10 처리, WORK_LOG 21번 항목)
 
-3. **서버 측 쿼터 집계 도입** — `queries_remaining`을 클라이언트 localStorage가 아니라 Supabase RPC(예: `consume_quota()` SECURITY DEFINER 함수)로 체크·차감하도록 전환. 이후 `guard_entitlement_columns()`에 `queries_remaining`도 포함시켜 클라이언트 직접 쓰기를 막는 게 목표. 설계 방향에 대해 별도로 상의드리는 게 좋을 것 같습니다.
+3. **서버 측 쿼터 집계 도입** — 완료. `server/db/quota_enforcement_migration.sql` 신규 작성(`get_quota_status()`/`consume_quota()` SECURITY DEFINER RPC, `queries_remaining` 잠금 활성화), 클라이언트를 로그인 계정 기준 서버 RPC로 전환(게스트는 기존 로컬 방식 유지). **다만 이 마이그레이션은 아직 Supabase에 적용되지 않았습니다 — 대표님이 SQL Editor에서 직접 실행해주셔야 합니다** (선행 조건인 `rls_hardening_migration.sql`, `payment_verification_migration.sql`은 이미 적용 완료 상태로 확인됨).
+   - typecheck/build/vitest/eslint 전체 통과 확인.
+
+### P1-B — 이번 주 내 (남은 항목)
+
 4. **구독 만료 자동 강제** — `expire_stale_subscriptions()`를 Supabase의 `pg_cron` extension으로 매일 1회 실행하도록 스케줄링(Supabase 대시보드에서 몇 줄 SQL로 가능), 또는 Vercel Cron(`vercel.json`의 `crons` 필드)으로 서버리스 엔드포인트를 주기 호출.
 
 ### P2 — 출시 전 최종 점검

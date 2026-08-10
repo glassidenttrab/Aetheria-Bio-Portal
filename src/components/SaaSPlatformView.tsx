@@ -8,7 +8,7 @@ import { ScienceSkillsCatalogModal } from './ScienceSkillsCatalogModal';
 import { EnterpriseB2BConsoleModal } from './EnterpriseB2BConsoleModal';
 import { useLanguage } from '../contexts/LanguageContext';
 import { PLAN_QUOTA_CAP, resolveQuota } from '../utils/quota';
-import { fetchTargetVaultDB, addTargetVaultItemDB, removeTargetVaultItemDB, saveSkillAuditLogDB } from '../services/supabaseService';
+import { fetchTargetVaultDB, addTargetVaultItemDB, removeTargetVaultItemDB, saveSkillAuditLogDB, getQuotaStatusDB, consumeQuotaDB } from '../services/supabaseService';
 import {
   Brain, Bone, Smile, Stethoscope, Clock, Sparkles, Search, Dna, Download, ShieldCheck, CheckCircle, Zap,
   ExternalLink, KeyRound, ArrowRight, Activity, FlaskConical, Layers, Crown, Lock, Eye, ChevronRight, Filter, Info, HeartPulse,
@@ -59,14 +59,25 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
     });
   }, [user.id]);
 
-  // 로그인/플랜 변경 시 일(Free)/월(Pro,Enterprise) 주기가 넘어갔으면 남은 횟수를 플랜 한도로 리셋해서 화면에 즉시 반영
+  // 로그인/플랜 변경 시 일(Free)/월(Pro,Enterprise) 주기가 넘어갔으면 남은 횟수를 플랜 한도로 리셋해서 화면에 즉시 반영.
+  // 로그인 계정은 서버(get_quota_status RPC)가 리셋을 판단·반영한다 — 브라우저 localStorage에만
+  // 의존하면 다른 브라우저에서 로그인했을 때 쿼터가 실제와 다르게 보이는 문제가 있었다.
+  // 계정이 없는 게스트는 서버에 귀속시킬 행이 없어 기존처럼 로컬 주기 판별을 그대로 쓴다.
   useEffect(() => {
-    const { queriesRemaining, didReset } = resolveQuota(user.email, user.plan, user.queriesRemaining);
-    if (didReset) {
-      onUpdateUser({ queriesRemaining });
+    if (user.id === 'guest') {
+      const { queriesRemaining, didReset } = resolveQuota(user.email, user.plan, user.queriesRemaining);
+      if (didReset) {
+        onUpdateUser({ queriesRemaining });
+      }
+      return;
     }
+    getQuotaStatusDB().then(status => {
+      if (status) {
+        onUpdateUser({ queriesRemaining: status.queriesRemaining });
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user.email, user.plan]);
+  }, [user.id, user.email, user.plan]);
 
   const handleOpenB2BConsole = () => {
     const isLoggedIn = Boolean(user && user.id && user.id !== 'guest' && user.id !== 'guest_user');
@@ -126,36 +137,55 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
     );
   });
 
-  const handleRunAnalysis = async (targetKeyToRun?: string) => {
-    // 주기(Free=일 단위 / Pro,Enterprise=월 단위)가 바뀌었으면 남은 횟수를 플랜 한도로 리셋
-    const { queriesRemaining, didReset } = resolveQuota(user.email, user.plan, user.queriesRemaining);
-    if (didReset) {
-      onUpdateUser({ queriesRemaining });
-    }
-
-    // 한도 소진 시: 플랜별 안내 메시지 + 업그레이드 유도 후 실행 차단
-    if (queriesRemaining <= 0) {
-      const cap = PLAN_QUOTA_CAP[user.plan];
-      if (user.plan === 'free') {
-        if (window.confirm(
-          `오늘 무료 체험 한도(일 ${cap}회)를 모두 사용하셨습니다.\n` +
-          `내일 자정 이후 자동으로 초기화되며, Pro 플랜(월 30회)으로 업그레이드하면 지금 바로 계속 이용하실 수 있습니다.\n` +
-          `지금 Pro로 업그레이드하시겠습니까?`
-        )) {
-          onOpenCheckout('pro');
-        }
-      } else if (user.plan === 'pro') {
-        if (window.confirm(
-          `이번 달 파이프라인 리포트 생성 한도(월 ${cap}회)를 모두 사용하셨습니다.\n` +
-          `다음 달 1일에 자동으로 초기화되며, Enterprise 플랜(월 500회)으로 업그레이드하면 즉시 계속 이용하실 수 있습니다.\n` +
-          `지금 Enterprise로 업그레이드하시겠습니까?`
-        )) {
-          onOpenCheckout('enterprise');
-        }
-      } else {
-        alert(`이번 달 파이프라인 리포트 생성 한도(월 ${cap}회)를 모두 사용하셨습니다.\n다음 달 1일에 자동으로 초기화됩니다.`);
+  // 한도 소진 시: 플랜별 안내 메시지 + 업그레이드 유도
+  const promptQuotaExceeded = (plan: UserPlanTier, cap: number) => {
+    if (plan === 'free') {
+      if (window.confirm(
+        `오늘 무료 체험 한도(일 ${cap}회)를 모두 사용하셨습니다.\n` +
+        `내일 자정 이후 자동으로 초기화되며, Pro 플랜(월 30회)으로 업그레이드하면 지금 바로 계속 이용하실 수 있습니다.\n` +
+        `지금 Pro로 업그레이드하시겠습니까?`
+      )) {
+        onOpenCheckout('pro');
       }
-      return;
+    } else if (plan === 'pro') {
+      if (window.confirm(
+        `이번 달 파이프라인 리포트 생성 한도(월 ${cap}회)를 모두 사용하셨습니다.\n` +
+        `다음 달 1일에 자동으로 초기화되며, Enterprise 플랜(월 500회)으로 업그레이드하면 즉시 계속 이용하실 수 있습니다.\n` +
+        `지금 Enterprise로 업그레이드하시겠습니까?`
+      )) {
+        onOpenCheckout('enterprise');
+      }
+    } else {
+      alert(`이번 달 파이프라인 리포트 생성 한도(월 ${cap}회)를 모두 사용하셨습니다.\n다음 달 1일에 자동으로 초기화됩니다.`);
+    }
+  };
+
+  const handleRunAnalysis = async (targetKeyToRun?: string) => {
+    const cap = PLAN_QUOTA_CAP[user.plan];
+
+    if (user.id === 'guest') {
+      // 계정이 없는 게스트는 서버 쿼터에 귀속시킬 행이 없어 기존처럼 브라우저 로컬 주기 판별만 사용.
+      const { queriesRemaining, didReset } = resolveQuota(user.email, user.plan, user.queriesRemaining);
+      if (didReset) {
+        onUpdateUser({ queriesRemaining });
+      }
+      if (queriesRemaining <= 0) {
+        promptQuotaExceeded(user.plan, cap);
+        return;
+      }
+      onUpdateUser({ queriesRemaining: queriesRemaining - 1 });
+    } else {
+      // 로그인 계정은 서버에서 원자적으로 체크·차감한다 — 다른 브라우저에서 로그인해도 동일하게 반영됨.
+      const consumed = await consumeQuotaDB();
+      if (!consumed) {
+        alert('쿼터 확인 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        return;
+      }
+      onUpdateUser({ queriesRemaining: consumed.status.queriesRemaining });
+      if (!consumed.success) {
+        promptQuotaExceeded(user.plan, cap);
+        return;
+      }
     }
 
     const targetToUse = targetKeyToRun || selectedTargetKey;
@@ -164,7 +194,6 @@ export const SaaSPlatformView: React.FC<SaaSPlatformViewProps> = ({
     try {
       const res = await runNeuroLongevityAnalysis(activeCategory, targetToUse);
       setAnalysisResult(res);
-      onUpdateUser({ queriesRemaining: queriesRemaining - 1 });
       saveSkillAuditLogDB({
         user_id: user.id !== 'guest' ? user.id : undefined,
         skill_id: `ai_target_scan_${activeCategory}`,

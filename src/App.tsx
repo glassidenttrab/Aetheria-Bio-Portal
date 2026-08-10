@@ -122,9 +122,16 @@ const AppInner: React.FC = () => {
   const handleUpdateUser = (updated: Partial<UserProfile>) => {
     setUser(prev => {
       const nextUser = { ...prev, ...updated };
-      // 비로그인 게스트(빈 이메일)는 DB에 저장하지 않고 로컬 상태만 갱신
+      // 비로그인 게스트(빈 이메일)는 DB에 저장하지 않고 로컬 상태만 갱신.
+      // queriesRemaining은 이제 서버 쿼터 RPC(get_quota_status/consume_quota)가 전담한다.
+      // DB 트리거가 클라이언트발 queries_remaining 변경을 막고 있으므로, 여기서는
+      // 화면 상태만 갱신하고 그 필드는 다시 DB에 쓰지 않는다.
       if (nextUser.email) {
-        upsertUserProfileDB({ email: nextUser.email, ...updated, authUid: authUser?.id });
+        const persistable: Partial<UserProfile> = { ...updated };
+        delete persistable.queriesRemaining;
+        if (Object.keys(persistable).length > 0) {
+          upsertUserProfileDB({ email: nextUser.email, ...persistable, authUid: authUser?.id });
+        }
       }
       return nextUser;
     });

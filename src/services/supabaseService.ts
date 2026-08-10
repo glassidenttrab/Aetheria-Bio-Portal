@@ -106,6 +106,72 @@ export async function upsertUserProfileDB(profile: Partial<UserProfile> & { emai
   }
 }
 
+export interface QuotaStatus {
+  plan: UserPlanTier;
+  queriesRemaining: number;
+  quotaCap: number;
+}
+
+/**
+ * 2-1. 로그인한 사용자의 현재 쿼터 상태를 서버에서 조회한다(주기가 바뀌었으면
+ * 서버가 리셋까지 반영). 차감은 하지 않는다 — 화면 마운트/플랜 변경 시 정확한
+ * 잔여 횟수를 표시하기 위해 쓴다. server/db/quota_enforcement_migration.sql의
+ * get_quota_status() RPC를 호출한다.
+ */
+interface QuotaStatusRpcRow {
+  plan: string;
+  queries_remaining: number;
+  quota_cap: number;
+}
+
+export async function getQuotaStatusDB(): Promise<QuotaStatus | null> {
+  try {
+    const { data, error } = await supabase.rpc('get_quota_status').single<QuotaStatusRpcRow>();
+    if (error || !data) {
+      console.warn('Supabase get_quota_status notice:', error);
+      return null;
+    }
+    return {
+      plan: data.plan as UserPlanTier,
+      queriesRemaining: data.queries_remaining,
+      quotaCap: data.quota_cap,
+    };
+  } catch (err) {
+    console.warn('Supabase get_quota_status exception:', err);
+    return null;
+  }
+}
+
+/**
+ * 2-2. 로그인한 사용자의 쿼터를 서버에서 원자적으로 체크·차감한다(consume_quota()
+ * RPC). 한도 소진 시 success:false와 함께 현재 상태를 그대로 반환하며, 이 경우는
+ * 예외가 아니라 정상 응답이다. 네트워크/권한 오류일 때만 null을 반환한다.
+ */
+interface ConsumeQuotaRpcRow extends QuotaStatusRpcRow {
+  success: boolean;
+}
+
+export async function consumeQuotaDB(): Promise<{ success: boolean; status: QuotaStatus } | null> {
+  try {
+    const { data, error } = await supabase.rpc('consume_quota').single<ConsumeQuotaRpcRow>();
+    if (error || !data) {
+      console.warn('Supabase consume_quota notice:', error);
+      return null;
+    }
+    return {
+      success: data.success,
+      status: {
+        plan: data.plan as UserPlanTier,
+        queriesRemaining: data.queries_remaining,
+        quotaCap: data.quota_cap,
+      },
+    };
+  } catch (err) {
+    console.warn('Supabase consume_quota exception:', err);
+    return null;
+  }
+}
+
 /**
  * 3. Save Skill Query Audit Log / Bookmark to Supabase DB
  *

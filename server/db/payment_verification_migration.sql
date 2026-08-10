@@ -41,9 +41,10 @@ CREATE INDEX IF NOT EXISTS subscriptions_expires_at_idx ON public.subscriptions 
 --    service_role 키로 들어온 요청과 SECURITY DEFINER 함수 내부는 그렇지 않다.
 --    그 차이를 이용해 "일반 사용자가 자기 plan을 직접 바꾸는 것"만 막는다.
 --
---    ⚠️ queries_remaining은 아직 잠그지 않는다. 현재 쿼터 차감이 클라이언트에서
---       일어나기 때문에 지금 막으면 분석 실행 자체가 깨진다. 서버 쿼터(다음 단계)를
---       도입한 뒤 아래 주석 처리된 블록을 활성화할 것.
+--    ⚠️ 이 파일이 처음 작성됐을 때는 queries_remaining을 아직 잠그지 않았다(쿼터
+--       차감이 클라이언트에서 일어났기 때문). 서버 쿼터가 도입된 뒤로는
+--       server/db/quota_enforcement_migration.sql이 guard_entitlement_columns()를
+--       재정의해 queries_remaining까지 잠근다 — 이 파일 다음에 반드시 적용할 것.
 -- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.guard_entitlement_columns()
 RETURNS TRIGGER
@@ -64,11 +65,8 @@ BEGIN
         USING ERRCODE = 'insufficient_privilege';
     END IF;
 
-    -- 서버 쿼터 도입 후 활성화할 것:
-    -- IF NEW.queries_remaining IS DISTINCT FROM OLD.queries_remaining THEN
-    --   RAISE EXCEPTION 'queries_remaining은 서버만 변경할 수 있습니다'
-    --     USING ERRCODE = 'insufficient_privilege';
-    -- END IF;
+    -- queries_remaining 잠금은 server/db/quota_enforcement_migration.sql이
+    -- 이 함수를 CREATE OR REPLACE하면서 추가한다(이 파일만 적용한 시점에는 아직 잠기지 않음).
   END IF;
 
   RETURN NEW;

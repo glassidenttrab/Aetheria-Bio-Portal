@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as $3Dmol from '3dmol';
 import { X, RotateCw, ZoomIn, ZoomOut, Box, Eye, Tag, Database, Search, Loader2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { fetchAlphaFoldPrediction, fetchAlphaFoldPdbText, AlphaFoldPrediction, AlphaFoldNotFoundError } from '../services/alphafoldService';
+import {
+  fetchAlphaFoldPrediction, fetchAlphaFoldPdbText, AlphaFoldPrediction, AlphaFoldNotFoundError,
+  looksLikeUniProtAccession, resolveGeneSymbolToUniProtAccession
+} from '../services/alphafoldService';
 
 interface Mol3DViewerModalProps {
   isOpen: boolean;
@@ -65,7 +68,16 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
 
       (async () => {
         try {
-          const pred = await fetchAlphaFoldPrediction(currentUniprotId);
+          // "IDH1"처럼 UniProt accession(P10636 등) 형식이 아닌 유전자 심볼을 입력한
+          // 경우, AlphaFold DB에 그대로 보내면 400/404가 난다. UniProt 검색으로 먼저
+          // accession을 찾아 변환한다(못 찾으면 원래 입력값으로 그대로 시도).
+          let lookupId = currentUniprotId;
+          if (!looksLikeUniProtAccession(lookupId)) {
+            const resolved = await resolveGeneSymbolToUniProtAccession(lookupId);
+            if (resolved) lookupId = resolved;
+          }
+
+          const pred = await fetchAlphaFoldPrediction(lookupId);
           const pdbText = await fetchAlphaFoldPdbText(pred.pdbUrl);
           if (cancelled) return;
 

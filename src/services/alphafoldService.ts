@@ -2,6 +2,31 @@
 // 공개 REST API로 별도 API 키가 필요 없다. https://alphafold.ebi.ac.uk/api-docs
 const ALPHAFOLD_API_BASE = 'https://alphafold.ebi.ac.uk/api/prediction';
 
+// UniProt 정식 accession 형식(예: P10636, O75874, A0A0B4J2F0). 이 형식이 아니면
+// "IDH1", "EGFR" 같은 유전자 심볼로 보고 UniProt 검색으로 먼저 accession을 찾는다.
+const UNIPROT_ACCESSION_PATTERN =
+  /^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})$/i;
+
+export function looksLikeUniProtAccession(value: string): boolean {
+  return UNIPROT_ACCESSION_PATTERN.test(value.trim());
+}
+
+/**
+ * 유전자 심볼("IDH1" 등)을 UniProt accession("O75874")으로 변환한다. UniProt REST API는
+ * CORS가 열려 있어 브라우저에서 직접 호출 가능(AlphaFold DB와 동일한 패턴).
+ * 못 찾으면 null을 반환한다(예외를 던지지 않음 — 호출부가 원래 입력값으로 폴백할 수 있도록).
+ */
+export async function resolveGeneSymbolToUniProtAccession(geneSymbol: string): Promise<string | null> {
+  const query = encodeURIComponent(`gene:${geneSymbol.trim()} AND organism_id:9606 AND reviewed:true`);
+  const res = await fetch(
+    `https://rest.uniprot.org/uniprotkb/search?query=${query}&format=json&fields=accession&size=1`
+  );
+  if (!res.ok) return null;
+
+  const data = (await res.json()) as { results?: Array<{ primaryAccession?: string }> };
+  return data.results?.[0]?.primaryAccession ?? null;
+}
+
 export interface AlphaFoldPrediction {
   uniprotAccession: string;
   modelEntityId: string;

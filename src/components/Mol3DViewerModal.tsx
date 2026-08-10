@@ -4,7 +4,7 @@ import { X, RotateCw, ZoomIn, ZoomOut, Box, Eye, Tag, Database, Search, Loader2,
 import { useLanguage } from '../contexts/LanguageContext';
 import {
   fetchAlphaFoldPrediction, fetchAlphaFoldPdbText, AlphaFoldPrediction, AlphaFoldNotFoundError,
-  looksLikeUniProtAccession, resolveGeneSymbolToUniProtAccession
+  looksLikeUniProtAccession, resolveUniProtEntry
 } from '../services/alphafoldService';
 
 interface Mol3DViewerModalProps {
@@ -37,6 +37,10 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<any>(null);
+  // 사용자가 이 모달 안의 자체 검색창으로 직접 입력한 경우에만 UniProt에서 정식
+  // 단백질명을 다시 조회한다(props로 이미 정확한 이름을 받은 큐레이션/실시간 조회
+  // 진입 경로는 불필요한 API 호출 없이 그대로 둔다).
+  const isManualSearchRef = useRef(false);
 
   useEffect(() => {
     setCurrentUniprotId(uniprotId);
@@ -68,13 +72,22 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
 
       (async () => {
         try {
-          // "IDH1"처럼 UniProt accession(P10636 등) 형식이 아닌 유전자 심볼을 입력한
-          // 경우, AlphaFold DB에 그대로 보내면 400/404가 난다. UniProt 검색으로 먼저
-          // accession을 찾아 변환한다(못 찾으면 원래 입력값으로 그대로 시도).
           let lookupId = currentUniprotId;
-          if (!looksLikeUniProtAccession(lookupId)) {
-            const resolved = await resolveGeneSymbolToUniProtAccession(lookupId);
-            if (resolved) lookupId = resolved;
+
+          if (isManualSearchRef.current) {
+            // 자체 검색창으로 직접 입력한 경우: "IDH1"(유전자 심볼)이든 "O75874"(accession)
+            // 이든 UniProt에서 정식 accession과 단백질 정식 명칭을 함께 조회해 화면에
+            // 반영한다. 그대로 AlphaFold DB에 심볼을 보내면 400/404가 나기도 한다.
+            isManualSearchRef.current = false;
+            const resolved = await resolveUniProtEntry(lookupId);
+            if (resolved) {
+              lookupId = resolved.accession;
+              if (!cancelled) setCurrentProtein(`${resolved.geneName} - ${resolved.proteinName}`);
+            }
+          } else if (!looksLikeUniProtAccession(lookupId)) {
+            // props로 들어온 값이 accession 형식이 아닌 드문 경우의 안전망.
+            const resolved = await resolveUniProtEntry(lookupId);
+            if (resolved) lookupId = resolved.accession;
           }
 
           const pred = await fetchAlphaFoldPrediction(lookupId);
@@ -175,8 +188,11 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
     e.preventDefault();
     if (!customQuery.trim()) return;
     const nextId = customQuery.trim().toUpperCase();
+    isManualSearchRef.current = true;
     setCurrentUniprotId(nextId);
-    setCurrentProtein(`Protein Target (${nextId})`);
+    // 정식 단백질명은 UniProt 조회가 끝나는 대로 채워진다(위 useEffect 참고). 그 전까지는
+    // 검색어를 그대로 보여준다 — 이전 검색 결과 이름이 잠깐 남아 있는 것보다 낫다.
+    setCurrentProtein(nextId);
     setCustomQuery('');
   };
 

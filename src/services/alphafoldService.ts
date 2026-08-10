@@ -11,20 +11,44 @@ export function looksLikeUniProtAccession(value: string): boolean {
   return UNIPROT_ACCESSION_PATTERN.test(value.trim());
 }
 
+export interface ResolvedUniProtEntry {
+  accession: string;
+  proteinName: string;
+  geneName: string;
+}
+
 /**
- * 유전자 심볼("IDH1" 등)을 UniProt accession("O75874")으로 변환한다. UniProt REST API는
- * CORS가 열려 있어 브라우저에서 직접 호출 가능(AlphaFold DB와 동일한 패턴).
- * 못 찾으면 null을 반환한다(예외를 던지지 않음 — 호출부가 원래 입력값으로 폴백할 수 있도록).
+ * 유전자 심볼("IDH1")이든 accession("O75874")이든 그대로 받아 UniProt에서 정식
+ * accession과 단백질 정식 명칭을 함께 조회한다. UniProt REST API는 CORS가 열려 있어
+ * 브라우저에서 직접 호출 가능(AlphaFold DB와 동일한 패턴). 못 찾으면 null을 반환한다
+ * (예외를 던지지 않음 — 호출부가 원래 입력값으로 폴백할 수 있도록).
  */
-export async function resolveGeneSymbolToUniProtAccession(geneSymbol: string): Promise<string | null> {
-  const query = encodeURIComponent(`gene:${geneSymbol.trim()} AND organism_id:9606 AND reviewed:true`);
+export async function resolveUniProtEntry(rawQuery: string): Promise<ResolvedUniProtEntry | null> {
+  const trimmed = rawQuery.trim();
+  const searchTerm = looksLikeUniProtAccession(trimmed)
+    ? `accession:${trimmed}`
+    : `gene:${trimmed} AND organism_id:9606 AND reviewed:true`;
+  const query = encodeURIComponent(searchTerm);
   const res = await fetch(
-    `https://rest.uniprot.org/uniprotkb/search?query=${query}&format=json&fields=accession&size=1`
+    `https://rest.uniprot.org/uniprotkb/search?query=${query}&format=json&fields=accession,protein_name,gene_names&size=1`
   );
   if (!res.ok) return null;
 
-  const data = (await res.json()) as { results?: Array<{ primaryAccession?: string }> };
-  return data.results?.[0]?.primaryAccession ?? null;
+  const data = (await res.json()) as {
+    results?: Array<{
+      primaryAccession?: string;
+      proteinDescription?: { recommendedName?: { fullName?: { value?: string } } };
+      genes?: Array<{ geneName?: { value?: string } }>;
+    }>;
+  };
+  const entry = data.results?.[0];
+  if (!entry?.primaryAccession) return null;
+
+  return {
+    accession: entry.primaryAccession,
+    proteinName: entry.proteinDescription?.recommendedName?.fullName?.value || trimmed,
+    geneName: entry.genes?.[0]?.geneName?.value || trimmed,
+  };
 }
 
 export interface AlphaFoldPrediction {

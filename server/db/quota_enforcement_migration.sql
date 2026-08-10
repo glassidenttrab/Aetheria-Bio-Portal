@@ -87,7 +87,11 @@ BEGIN
       RETURNING * INTO v_user;
   END IF;
 
-  RETURN QUERY SELECT v_user.plan, v_user.queries_remaining, v_cap;
+  -- public.users.plan은 VARCHAR(20)이라 RETURNS TABLE의 TEXT 컬럼과 타입이 정확히
+  -- 일치하지 않으면 "structure of query does not match function result type"
+  -- (42804) 오류가 난다. RETURN QUERY는 SELECT와 달리 varchar→text 암묵적 캐스팅을
+  -- 해주지 않으므로 명시적으로 캐스팅한다.
+  RETURN QUERY SELECT v_user.plan::TEXT, v_user.queries_remaining, v_cap;
 END;
 $$;
 
@@ -124,7 +128,7 @@ BEGIN
   END IF;
 
   IF v_user.queries_remaining <= 0 THEN
-    RETURN QUERY SELECT false, v_user.plan, v_user.queries_remaining, v_cap;
+    RETURN QUERY SELECT false, v_user.plan::TEXT, v_user.queries_remaining, v_cap;
     RETURN;
   END IF;
 
@@ -133,7 +137,7 @@ BEGIN
     WHERE id = v_user.id
     RETURNING * INTO v_user;
 
-  RETURN QUERY SELECT true, v_user.plan, v_user.queries_remaining, v_cap;
+  RETURN QUERY SELECT true, v_user.plan::TEXT, v_user.queries_remaining, v_cap;
 END;
 $$;
 

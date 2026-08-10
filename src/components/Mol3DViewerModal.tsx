@@ -40,48 +40,73 @@ export const Mol3DViewerModal: React.FC<Mol3DViewerModalProps> = ({
     setCurrentProtein(proteinName);
   }, [uniprotId, proteinName]);
 
-  // AlphaFold DB Live API에서 실제 pLDDT 메타데이터 + 구조 파일을 가져와 3dmol로 렌더링
+  // AlphaFold DB Live API에서 실제 pLDDT 메타데이터 + 구조 파일을 가져와 3dmol로 렌더링.
+  //
+  // 모달이 열리는 순간에는 CSS 레이아웃/전환이 아직 안정되지 않아 컨테이너의
+  // clientWidth/clientHeight가 일시적으로 0일 수 있다. 그 상태에서 $3Dmol.createViewer를
+  // 호출하면 WebGL 프레임버퍼 첨부 크기가 0이 되어(GL_INVALID_FRAMEBUFFER_OPERATION)
+  // 구조가 빈 화면으로 깨져 보인다. ResizeObserver로 컨테이너가 실제 크기를 가질 때까지
+  // 기다렸다가 렌더러를 생성하고, 이후 창 크기 변경 시에도 캔버스를 다시 맞춘다.
   useEffect(() => {
     if (!isOpen || !containerRef.current) return;
 
     let cancelled = false;
+    let viewer: any = null;
     setIsLoading(true);
     setError(null);
 
     const container = containerRef.current;
-    container.innerHTML = '';
-    const viewer = $3Dmol.createViewer(container, { backgroundColor: '#050a14' });
-    viewerRef.current = viewer;
 
-    (async () => {
-      try {
-        const pred = await fetchAlphaFoldPrediction(currentUniprotId);
-        const pdbText = await fetchAlphaFoldPdbText(pred.pdbUrl);
-        if (cancelled) return;
+    const initViewer = () => {
+      if (cancelled || viewer) return;
+      container.innerHTML = '';
+      viewer = $3Dmol.createViewer(container, { backgroundColor: '#050a14' });
+      viewerRef.current = viewer;
 
-        viewer.addModel(pdbText, 'pdb');
-        applyStyle(viewer, activeStyle, showSurface, showLabels);
-        viewer.zoomTo();
-        viewer.render();
-        if (isAutoRotate) viewer.spin('y', 1);
+      (async () => {
+        try {
+          const pred = await fetchAlphaFoldPrediction(currentUniprotId);
+          const pdbText = await fetchAlphaFoldPdbText(pred.pdbUrl);
+          if (cancelled) return;
 
-        setPrediction(pred);
-      } catch (err) {
-        if (cancelled) return;
-        if (err instanceof AlphaFoldNotFoundError) {
-          setError(err.message);
-        } else {
-          setError('AlphaFold API 연결에 실패했습니다. 네트워크 상태를 확인하거나 잠시 후 다시 시도해주세요.');
+          viewer.addModel(pdbText, 'pdb');
+          applyStyle(viewer, activeStyle, showSurface, showLabels);
+          viewer.resize();
+          viewer.zoomTo();
+          viewer.render();
+          if (isAutoRotate) viewer.spin('y', 1);
+
+          setPrediction(pred);
+        } catch (err) {
+          if (cancelled) return;
+          if (err instanceof AlphaFoldNotFoundError) {
+            setError(err.message);
+          } else {
+            setError('AlphaFold API 연결에 실패했습니다. 네트워크 상태를 확인하거나 잠시 후 다시 시도해주세요.');
+          }
+          setPrediction(null);
+        } finally {
+          if (!cancelled) setIsLoading(false);
         }
-        setPrediction(null);
-      } finally {
-        if (!cancelled) setIsLoading(false);
+      })();
+    };
+
+    const resizeObserver = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect;
+      if (width === 0 || height === 0) return;
+      if (!viewer) {
+        initViewer();
+      } else {
+        viewer.resize();
+        viewer.render();
       }
-    })();
+    });
+    resizeObserver.observe(container);
 
     return () => {
       cancelled = true;
-      viewer.clear();
+      resizeObserver.disconnect();
+      viewer?.clear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, currentUniprotId]);

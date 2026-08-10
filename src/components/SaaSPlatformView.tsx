@@ -397,10 +397,18 @@ Status: High Freedom to Operate (FTO Clear)
         <div style={{ display: 'flex', gap: '16px', marginTop: '24px', position: 'relative', zIndex: 10, flexWrap: 'wrap' }}>
           <button
             onClick={() => {
+              // 큐레이션 목록에 없는 유전자를 검색해 실시간 조회 결과가 떠 있는 상태라면,
+              // 이 버튼도 (선택된 적 없는) 옛 큐레이션 표적 대신 방금 검색한 단백질을 열어야 한다.
+              const liveUniprot = liveLookupResult?.uniprot;
+              if (liveUniprot && liveLookupResult?.alphafold) {
+                handleOpen3DViewer(`AF-${liveUniprot.accession}-F1`, liveUniprot.proteinName, liveUniprot.accession);
+                return;
+              }
+
               const deptProtein = DEPARTMENT_DEFAULT_PROTEINS[activeCategory];
               const currentInfo = currentTargetMap[selectedTargetKey];
               const targetPdb = TARGET_PDB_MAP[selectedTargetKey];
-              
+
               if (currentInfo && targetPdb) {
                 handleOpen3DViewer(targetPdb, `${currentInfo.geneSymbol} - ${currentInfo.targetName}`, currentInfo.uniprotId);
               } else if (deptProtein) {
